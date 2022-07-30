@@ -30,7 +30,6 @@ public:
 
 private:
     const int length = 400;
-    //const int gap = length/4;
     const int deck_size = length/10;
     
     QPoint* corner_user;
