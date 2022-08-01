@@ -25,6 +25,8 @@ private:
     void paintEvent(QPaintEvent *event) override;
     void PaintEmptyField();
     void PaintRects();
+    void MoveRects(QRect* rect);
+    QRect CalculateSuggestedPos(QRect* rect);
 
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
@@ -49,8 +51,7 @@ protected slots:
 private:
     const int length = 400;
     const int deck_size = length/10;
-    QPoint* corner_field;
-    QPoint* corner_ships;
+    QRect* field_rect;
     QPushButton* finishButton;
     MainGameWindow* gameWindow;
 
@@ -68,7 +69,9 @@ private:
     QPoint previous_point;
     QPoint cur_point;
 
-    int which_ship;
+    int which_ship = NONE;
+
+    bool isInField = false;
 };
 
 #endif //SEABATTLE_POSITIONINGWINDOW_H
