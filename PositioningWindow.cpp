@@ -11,28 +11,26 @@ PositioningWindow::PositioningWindow() {
     mainLayout->setContentsMargins(500, 670, 500, 20);
     setLayout(mainLayout);
 
-    four_decker_rect = new QRect(QPoint(field_rect->right() + length * 0.3, field_rect->top()),
-                                 QSize(deck_size * 4, deck_size));
-    three_decker_rect_1 = new QRect(four_decker_rect->bottomLeft() + QPoint(0, deck_size),
-                                    QSize(deck_size * 3, deck_size));
-    three_decker_rect_2 = new QRect(three_decker_rect_1->topRight() + QPoint(deck_size * 1.3, 0),
-                                    QSize(deck_size * 3, deck_size));
-    two_decker_rect_1 = new QRect(three_decker_rect_1->bottomLeft() + QPoint(0, deck_size),
-                                  QSize(deck_size * 2, deck_size));
-    two_decker_rect_2 = new QRect(two_decker_rect_1->topRight() + QPoint(deck_size * 1.3, 0),
-                                  QSize(deck_size * 2, deck_size));
-    two_decker_rect_3 = new QRect(two_decker_rect_2->topRight() + QPoint(deck_size * 1.3, 0),
-                                  QSize(deck_size * 2, deck_size));
-    one_decker_rect_1 = new QRect(two_decker_rect_1->bottomLeft() + QPoint(2, deck_size),
-                                  QSize(deck_size, deck_size));
-    one_decker_rect_2 = new QRect(one_decker_rect_1->topRight() + QPoint(deck_size * 1.3, 0),
-                                  QSize(deck_size, deck_size));
-    one_decker_rect_3 = new QRect(one_decker_rect_2->topRight() + QPoint(deck_size * 1.3, 0),
-                                  QSize(deck_size, deck_size));
-    one_decker_rect_4 = new QRect(one_decker_rect_3->topRight() + QPoint(deck_size * 1.3, 0),
-                                  QSize(deck_size, deck_size));
-
-
+    mas_rect[0] = new QRect(QPoint(field_rect->right() + length * 0.3, field_rect->top()),
+                            QSize(deck_size * 4, deck_size));
+    mas_rect[1] = new QRect(mas_rect[0]->bottomLeft() + QPoint(0, deck_size),
+                            QSize(deck_size * 3, deck_size));
+    mas_rect[2] = new QRect(mas_rect[1]->topRight() + QPoint(deck_size * 1.3, 0),
+                            QSize(deck_size * 3, deck_size));
+    mas_rect[3] = new QRect(mas_rect[1]->bottomLeft() + QPoint(0, deck_size),
+                            QSize(deck_size * 2, deck_size));
+    mas_rect[4] = new QRect(mas_rect[3]->topRight() + QPoint(deck_size * 1.3, 0),
+                            QSize(deck_size * 2, deck_size));
+    mas_rect[5] = new QRect(mas_rect[4]->topRight() + QPoint(deck_size * 1.3, 0),
+                            QSize(deck_size * 2, deck_size));
+    mas_rect[6] = new QRect(mas_rect[3]->bottomLeft() + QPoint(2, deck_size),
+                            QSize(deck_size, deck_size));
+    mas_rect[7] = new QRect(mas_rect[6]->topRight() + QPoint(deck_size * 1.3, 0),
+                            QSize(deck_size, deck_size));
+    mas_rect[8] = new QRect(mas_rect[7]->topRight() + QPoint(deck_size * 1.3, 0),
+                            QSize(deck_size, deck_size));
+    mas_rect[9] = new QRect(mas_rect[8]->topRight() + QPoint(deck_size * 1.3, 0),
+                            QSize(deck_size, deck_size));
 }
 
 void PositioningWindow::onFinish() {
@@ -89,47 +87,13 @@ void PositioningWindow::PaintRects() {
     QBrush greenBrush(Qt::green);
     QPen darkGreenPen(Qt::darkGreen);
 
-    if (isInField) {
-        QRect suggested_pos;
-        switch (which_ship) {
-            case FOUR_DECKER_RECT:
-                suggested_pos = CalculateSuggestedPos(four_decker_rect);
-                break;
-            case THREE_DECKER_RECT_1:
-                suggested_pos = CalculateSuggestedPos(three_decker_rect_1);
-                break;
-            case THREE_DECKER_RECT_2:
-                suggested_pos = CalculateSuggestedPos(three_decker_rect_2);
-                break;
-            case TWO_DECKER_RECT_1:
-                suggested_pos = CalculateSuggestedPos(two_decker_rect_1);
-                break;
-            case TWO_DECKER_RECT_2:
-                suggested_pos = CalculateSuggestedPos(two_decker_rect_2);
-                break;
-            case TWO_DECKER_RECT_3:
-                suggested_pos = CalculateSuggestedPos(two_decker_rect_3);
-                break;
-            case ONE_DECKER_RECT_1:
-                suggested_pos = CalculateSuggestedPos(one_decker_rect_1);
-                break;
-            case ONE_DECKER_RECT_2:
-                suggested_pos = CalculateSuggestedPos(one_decker_rect_2);
-                break;
-            case ONE_DECKER_RECT_3:
-                suggested_pos = CalculateSuggestedPos(one_decker_rect_3);
-                break;
-            case ONE_DECKER_RECT_4:
-                suggested_pos = CalculateSuggestedPos(one_decker_rect_4);
-                break;
-            default:
-                break;
-        }
+    if (isInField && isPositioningInProcess) {
+        QRect suggested_pos= CalculateSuggestedPos(mas_rect[which_ship]);
 
         painter.setBrush(greenBrush);
         painter.setPen(darkGreenPen);
         painter.drawRect(suggested_pos);
-        for (int i = 1; i < suggested_pos.width()/deck_size; i++) {
+        for (int i = 1; i < suggested_pos.width() / deck_size; i++) {
             painter.drawLine(suggested_pos.topLeft() + QPoint(deck_size * i, 0),
                              suggested_pos.bottomLeft() + QPoint(deck_size * i, 0));
         }
@@ -138,75 +102,46 @@ void PositioningWindow::PaintRects() {
     painter.setBrush(blueBrush);
     painter.setPen(bluePen);
 
-    painter.drawRect(*four_decker_rect);
-    painter.drawRect(*three_decker_rect_1);
-    painter.drawRect(*three_decker_rect_2);
-    painter.drawRect(*two_decker_rect_1);
-    painter.drawRect(*two_decker_rect_2);
-    painter.drawRect(*two_decker_rect_3);
-    painter.drawRect(*one_decker_rect_1);
-    painter.drawRect(*one_decker_rect_2);
-    painter.drawRect(*one_decker_rect_3);
-    painter.drawRect(*one_decker_rect_4);
+    for (int i = 0; i < sizeof(mas_rect) / sizeof(QRect *); i++) {
+        painter.drawRect(*mas_rect[i]);
+    }
 
     for (int i = 1; i <= 3; i++) {
-        painter.drawLine(four_decker_rect->topLeft() + QPoint(deck_size * i, 0),
-                         four_decker_rect->bottomLeft() + QPoint(deck_size * i, 0));
+        painter.drawLine(mas_rect[0]->topLeft() + QPoint(deck_size * i, 0),
+                         mas_rect[0]->bottomLeft() + QPoint(deck_size * i, 0));
     }
 
     for (int i = 1; i <= 2; i++) {
-        painter.drawLine(three_decker_rect_1->topLeft() + QPoint(deck_size * i, 0),
-                         three_decker_rect_1->bottomLeft() + QPoint(deck_size * i, 0));
+        painter.drawLine(mas_rect[1]->topLeft() + QPoint(deck_size * i, 0),
+                         mas_rect[1]->bottomLeft() + QPoint(deck_size * i, 0));
     }
 
     for (int i = 1; i <= 2; i++) {
-        painter.drawLine(three_decker_rect_2->topLeft() + QPoint(deck_size * i, 0),
-                         three_decker_rect_2->bottomLeft() + QPoint(deck_size * i, 0));
+        painter.drawLine(mas_rect[2]->topLeft() + QPoint(deck_size * i, 0),
+                         mas_rect[2]->bottomLeft() + QPoint(deck_size * i, 0));
     }
 
-    painter.drawLine(two_decker_rect_1->topLeft() + QPoint(deck_size, 0),
-                     two_decker_rect_1->bottomLeft() + QPoint(deck_size, 0));
-    painter.drawLine(two_decker_rect_2->topLeft() + QPoint(deck_size, 0),
-                     two_decker_rect_2->bottomLeft() + QPoint(deck_size, 0));
-    painter.drawLine(two_decker_rect_3->topLeft() + QPoint(deck_size, 0),
-                     two_decker_rect_3->bottomLeft() + QPoint(deck_size, 0));
+    painter.drawLine(mas_rect[3]->topLeft() + QPoint(deck_size, 0),
+                     mas_rect[3]->bottomLeft() + QPoint(deck_size, 0));
+    painter.drawLine(mas_rect[4]->topLeft() + QPoint(deck_size, 0),
+                     mas_rect[4]->bottomLeft() + QPoint(deck_size, 0));
+    painter.drawLine(mas_rect[5]->topLeft() + QPoint(deck_size, 0),
+                     mas_rect[5]->bottomLeft() + QPoint(deck_size, 0));
 
 }
 
 void PositioningWindow::mousePressEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
-        if (four_decker_rect->contains(event->pos())) {
-            previous_point = event->pos();
-            which_ship = FOUR_DECKER_RECT;
-        } else if (three_decker_rect_1->contains(event->pos())) {
-            previous_point = event->pos();
-            which_ship = THREE_DECKER_RECT_1;
-        } else if (three_decker_rect_2->contains(event->pos())) {
-            previous_point = event->pos();
-            which_ship = THREE_DECKER_RECT_2;
-        } else if (two_decker_rect_1->contains(event->pos())) {
-            previous_point = event->pos();
-            which_ship = TWO_DECKER_RECT_1;
-        } else if (two_decker_rect_2->contains(event->pos())) {
-            previous_point = event->pos();
-            which_ship = TWO_DECKER_RECT_2;
-        } else if (two_decker_rect_3->contains(event->pos())) {
-            previous_point = event->pos();
-            which_ship = TWO_DECKER_RECT_3;
-        } else if (one_decker_rect_1->contains(event->pos())) {
-            previous_point = event->pos();
-            which_ship = ONE_DECKER_RECT_1;
-        } else if (one_decker_rect_2->contains(event->pos())) {
-            previous_point = event->pos();
-            which_ship = ONE_DECKER_RECT_2;
-        } else if (one_decker_rect_3->contains(event->pos())) {
-            previous_point = event->pos();
-            which_ship = ONE_DECKER_RECT_3;
-        } else if (one_decker_rect_4->contains(event->pos())) {
-            previous_point = event->pos();
-            which_ship = ONE_DECKER_RECT_4;
-        } else {
-            which_ship = NONE;
+        for (int i = 0; i < sizeof(mas_rect) / sizeof(QRect *); i++) {
+            if (mas_rect[i]->contains(event->pos())) {
+                previous_point = event->pos();
+                which_ship = i;
+                isPositioningInProcess = true;
+                break;
+            }
+            else if (i ==sizeof(mas_rect) / sizeof(QRect *) -1){
+                which_ship = -1;
+            }
         }
     }
 }
@@ -215,45 +150,13 @@ void PositioningWindow::mouseMoveEvent(QMouseEvent *event) {
     if ((event->buttons() & Qt::LeftButton)) {
         cur_point = event->pos();
 
-        switch (which_ship) {
-            case FOUR_DECKER_RECT:
-                MoveRects(four_decker_rect);
-                break;
-            case THREE_DECKER_RECT_1:
-                MoveRects(three_decker_rect_1);
-                break;
-            case THREE_DECKER_RECT_2:
-                MoveRects(three_decker_rect_2);
-                break;
-            case TWO_DECKER_RECT_1:
-                MoveRects(two_decker_rect_1);
-                break;
-            case TWO_DECKER_RECT_2:
-                MoveRects(two_decker_rect_2);
-                break;
-            case TWO_DECKER_RECT_3:
-                MoveRects(two_decker_rect_3);
-                break;
-            case ONE_DECKER_RECT_1:
-                MoveRects(one_decker_rect_1);
-                break;
-            case ONE_DECKER_RECT_2:
-                MoveRects(one_decker_rect_2);
-                break;
-            case ONE_DECKER_RECT_3:
-                MoveRects(one_decker_rect_3);
-                break;
-            case ONE_DECKER_RECT_4:
-                MoveRects(one_decker_rect_4);
-                break;
-            default:
-                break;
+        if(which_ship!= -1) {
+            MoveRects(mas_rect[which_ship]);
         }
 
         update();
         previous_point = cur_point;
     }
-
 }
 
 void PositioningWindow::MoveRects(QRect *rect) {
@@ -287,6 +190,15 @@ QRect PositioningWindow::CalculateSuggestedPos(QRect *rect) {
     }
 
     return suggested_pos;
+}
+
+void PositioningWindow::mouseReleaseEvent(QMouseEvent *event) {
+    if (isInField && which_ship!= -1) {
+        QRect suggested_pos = CalculateSuggestedPos(mas_rect[which_ship]);
+        mas_rect[which_ship]->moveTopLeft(suggested_pos.topLeft());
+        isPositioningInProcess = false;
+        update();
+    }
 }
 
 

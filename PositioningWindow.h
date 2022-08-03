@@ -30,20 +30,8 @@ private:
 
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
 
-    enum Rects{
-        FOUR_DECKER_RECT,
-        THREE_DECKER_RECT_1,
-        THREE_DECKER_RECT_2,
-        TWO_DECKER_RECT_1,
-        TWO_DECKER_RECT_2,
-        TWO_DECKER_RECT_3,
-        ONE_DECKER_RECT_1,
-        ONE_DECKER_RECT_2,
-        ONE_DECKER_RECT_3,
-        ONE_DECKER_RECT_4,
-        NONE
-    };
 
 protected slots:
     void onFinish();
@@ -52,26 +40,17 @@ private:
     const int length = 400;
     const int deck_size = length/10;
     QRect* field_rect;
+    QRect* mas_rect[10];
+
     QPushButton* finishButton;
     MainGameWindow* gameWindow;
-
-    QRect* four_decker_rect;
-    QRect* three_decker_rect_1;
-    QRect* three_decker_rect_2;
-    QRect* two_decker_rect_1;
-    QRect* two_decker_rect_2;
-    QRect* two_decker_rect_3;
-    QRect* one_decker_rect_1;
-    QRect* one_decker_rect_2;
-    QRect* one_decker_rect_3;
-    QRect* one_decker_rect_4;
 
     QPoint previous_point;
     QPoint cur_point;
 
-    int which_ship = NONE;
-
+    int which_ship = -1;
     bool isInField = false;
+    bool isPositioningInProcess = false;
 };
 
 #endif //SEABATTLE_POSITIONINGWINDOW_H
