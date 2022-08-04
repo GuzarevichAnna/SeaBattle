@@ -8,18 +8,18 @@
 class Field {
 
 public:
-    Field(std::vector<Ship*> ships);
+    Field(Ship** mas_ships);
     ~Field() = default;
 
-    enum Cell{
-        EMPTY = 0,
-        SHIP = 1,
-        SHOT_SHIP = 2,
-        MISS = 3
-    };
+//    enum Cell{
+//        EMPTY = 0,
+//        SHIP = 1,
+//        SHOT_SHIP = 2,
+//        MISS = 3
+//    };
 
 
-    std::vector<std::vector<Cell>> matrix;
+    int matrix[10][10];
 };
 
 

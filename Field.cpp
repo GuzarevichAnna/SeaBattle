@@ -1,25 +1,23 @@
 #include "Field.h"
+#include <QDebug>
 
-Field::Field(std::vector<Ship*> ships) {
+Field::Field(Ship **mas_ships) {
+
     int x_coord;
     int y_coord;
 
-    matrix.resize(10);
-    for(int i = 0; i< 10; i++){
-        matrix[i].resize(10);
-    }
 
-    for(std::vector row : matrix){
-        for(Cell cell : row){
-            cell = EMPTY;
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 10; j++) {
+            matrix[i][j] = 0;
         }
-    }
 
-    for(Ship* ship : ships){
-        for(std::vector cell : ship->location){
-            x_coord = cell[0];
-            y_coord = cell[1];
-            matrix[x_coord][y_coord] = SHIP;
+    }
+    for (int i =0; i< 10; i++) {
+        Ship* cur_ship = mas_ships[i];
+        for (int j = 0; j < cur_ship->size; j++) {
+            Deck* cur_deck = cur_ship->mas_decks[j];
+            matrix[cur_deck->coord.getX()][cur_deck->coord.getY()] = cur_ship->id*10 + cur_deck->id;
         }
     }
 }

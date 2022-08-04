@@ -18,13 +18,13 @@ class MainGameWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    MainGameWindow(std::vector<Ship*> ships_user, std::vector<Ship*> ships_robot);
+    MainGameWindow(Ship** mas_ships_user, Ship** mas_ships_robot);
     ~MainGameWindow()= default;
 
     void paintEvent(QPaintEvent *) override;
     void mousePressEvent(QMouseEvent *) override;
 
-    Coordinates TranslateCoordinates_user(QPoint point);
+
     void PaintEmptyFields();
     void PaintShips();
 
@@ -37,6 +37,9 @@ private:
 
     Field* field_user;
     Field* field_robot;
+
+    QRect* field_rect_user;
+    QRect* field_rect_robot;
 };
 
 

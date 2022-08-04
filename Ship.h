@@ -2,27 +2,27 @@
 #define SEABATTLE_SHIP_H
 
 #include "Deck.h"
-#include <QPoint>
-#include <vector>
-
 
 class Ship {
-
 public:
-    //Ship(int start_x, int start_y, int direction);
-    Ship(std::vector<std::vector<int>> loc){
-        location = loc;
+    Ship(Deck** mas_decks_, int id_, int size_){
+        mas_decks = mas_decks_;
+        id = id_;
+        size = size_;
+        state = SAFE_SHIP;
     }
-    //virtual void Locate() = 0;
 
-    //virtual void Destroy() = 0;
-
-    std::vector<std::vector<int>> location;
-
-protected:
+    Deck** mas_decks;
+    int id;
     int size;
 
-};
 
+private:
+    enum State_Ship{
+        SAFE_SHIP = 0,
+        SHOT_SHIP = 1
+    };
+    State_Ship state;
+};
 
 #endif //SEABATTLE_SHIP_H

@@ -1,25 +1,27 @@
 #ifndef SEABATTLE_DECK_H
 #define SEABATTLE_DECK_H
 
+#include "Coordinates.h"
 
 class Deck {
 public:
 
-    Deck(int x, int y){
-        coord_x = x;
-        coord_y = y;
-        state= SAFE;
+    Deck(Coordinates coord_, int id_) : coord(coord_) {
+        id = id_;
+        state = SAFE_DECK;
     }
 
-    enum State{
-        SAFE = 0,
-        SHOT = 1
-    };
+    int id;
+    Coordinates coord;
 
 private:
+    enum State{
+        SAFE_DECK = 0,
+        SHOT_DECK = 1
+    };
     State state;
-    int coord_x;
-    int coord_y;
+
+
 };
 
 

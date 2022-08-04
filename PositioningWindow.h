@@ -13,6 +13,7 @@
 #include <QVBoxLayout>
 #include "MainGameWindow.h"
 #include <QDebug>
+#include "Ship.h"
 
 class PositioningWindow : public QWidget
 {
@@ -22,18 +23,18 @@ public:
     PositioningWindow();
 
 private:
-    void paintEvent(QPaintEvent *event) override;
     void PaintEmptyField();
     void PaintRects();
     void MoveRects(QRect* rect);
     QRect CalculateSuggestedPos(QRect* rect);
 
-    void mousePressEvent(QMouseEvent *event);
-    void mouseMoveEvent(QMouseEvent *event);
-    void mouseReleaseEvent(QMouseEvent *event);
+    void paintEvent(QPaintEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
 
 
-protected slots:
+private slots:
     void onFinish();
 
 private:

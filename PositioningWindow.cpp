@@ -33,33 +33,78 @@ PositioningWindow::PositioningWindow() {
                             QSize(deck_size, deck_size));
 }
 
-void PositioningWindow::onFinish() {
-    std::vector<int> ship_1_cell_1;
-    ship_1_cell_1.push_back(0);
-    ship_1_cell_1.push_back(0);
-
-    std::vector<int> ship_1_cell_2;
-    ship_1_cell_2.push_back(1);
-    ship_1_cell_2.push_back(0);
-
-    std::vector<std::vector<int>> loc_1;
-    loc_1.push_back(ship_1_cell_1);
-    loc_1.push_back(ship_1_cell_2);
-
-    Ship ship_1(loc_1);
-
-    std::vector<Ship *> ships;
-    ships.push_back(&ship_1);
-
-    gameWindow = new MainGameWindow(ships, ships);
-    gameWindow->resize(1100, 700);
-    gameWindow->show();
-    this->close();
-}
-
 void PositioningWindow::paintEvent(QPaintEvent *event) {
     PaintEmptyField();
     PaintRects();
+}
+
+void PositioningWindow::mousePressEvent(QMouseEvent *event) {
+    if (event->button() == Qt::LeftButton) {
+        for (int i = 0; i < sizeof(mas_rect) / sizeof(QRect *); i++) {
+            if (mas_rect[i]->contains(event->pos())) {
+                previous_point = event->pos();
+                which_ship = i;
+                isPositioningInProcess = true;
+                break;
+            } else if (i == sizeof(mas_rect) / sizeof(QRect *) - 1) {
+                which_ship = -1;
+            }
+        }
+    }
+}
+
+void PositioningWindow::mouseMoveEvent(QMouseEvent *event) {
+    if ((event->buttons() & Qt::LeftButton)) {
+        cur_point = event->pos();
+
+        if (which_ship != -1) {
+            MoveRects(mas_rect[which_ship]);
+        }
+
+        update();
+        previous_point = cur_point;
+    }
+}
+
+void PositioningWindow::mouseReleaseEvent(QMouseEvent *event) {
+    if (isInField && which_ship != -1) {
+        QRect suggested_pos = CalculateSuggestedPos(mas_rect[which_ship]);
+        mas_rect[which_ship]->moveTopLeft(suggested_pos.topLeft());
+        isPositioningInProcess = false;
+        update();
+    }
+}
+
+void PositioningWindow::MoveRects(QRect *rect) {
+    QPoint dist_point = cur_point - previous_point;
+    rect->moveTo(rect->topLeft() + dist_point);
+    if (field_rect->contains(rect->center())) {
+        isInField = true;
+    } else {
+        isInField = false;
+    }
+}
+
+void PositioningWindow::onFinish() {
+
+    Ship* mas_ships[10];
+    for (int i = 0; i < sizeof(mas_rect) / sizeof(QRect *); i++) {
+
+        int size = mas_rect[i]->width() / deck_size;
+        Deck **mas_decks = new Deck*[size];
+        for (int j = 0; j < size; j++) {
+            Deck* deck = new Deck(Coordinates::TranslateCoordinates(mas_rect[i]->topLeft() + QPoint(deck_size * j, 0),
+                                                                    field_rect->topLeft(), deck_size), j+1);
+            mas_decks[j] = deck;
+        }
+        Ship* ship = new Ship(mas_decks, i+1, size);
+        mas_ships[i] = ship;
+    }
+
+    gameWindow = new MainGameWindow(mas_ships, mas_ships);
+    gameWindow->resize(1100, 700);
+    gameWindow->show();
+    this->close();
 }
 
 void PositioningWindow::PaintEmptyField() {
@@ -88,7 +133,7 @@ void PositioningWindow::PaintRects() {
     QPen darkGreenPen(Qt::darkGreen);
 
     if (isInField && isPositioningInProcess) {
-        QRect suggested_pos= CalculateSuggestedPos(mas_rect[which_ship]);
+        QRect suggested_pos = CalculateSuggestedPos(mas_rect[which_ship]);
 
         painter.setBrush(greenBrush);
         painter.setPen(darkGreenPen);
@@ -130,45 +175,6 @@ void PositioningWindow::PaintRects() {
 
 }
 
-void PositioningWindow::mousePressEvent(QMouseEvent *event) {
-    if (event->button() == Qt::LeftButton) {
-        for (int i = 0; i < sizeof(mas_rect) / sizeof(QRect *); i++) {
-            if (mas_rect[i]->contains(event->pos())) {
-                previous_point = event->pos();
-                which_ship = i;
-                isPositioningInProcess = true;
-                break;
-            }
-            else if (i ==sizeof(mas_rect) / sizeof(QRect *) -1){
-                which_ship = -1;
-            }
-        }
-    }
-}
-
-void PositioningWindow::mouseMoveEvent(QMouseEvent *event) {
-    if ((event->buttons() & Qt::LeftButton)) {
-        cur_point = event->pos();
-
-        if(which_ship!= -1) {
-            MoveRects(mas_rect[which_ship]);
-        }
-
-        update();
-        previous_point = cur_point;
-    }
-}
-
-void PositioningWindow::MoveRects(QRect *rect) {
-    QPoint dist_point = cur_point - previous_point;
-    rect->moveTo(rect->topLeft() + dist_point);
-    if (field_rect->contains(rect->center())) {
-        isInField = true;
-    } else {
-        isInField = false;
-    }
-}
-
 QRect PositioningWindow::CalculateSuggestedPos(QRect *rect) {
     int distX = (rect->x() - field_rect->x()) / deck_size;
     int distY = ((rect->y() + deck_size - field_rect->y()) / deck_size);
@@ -191,14 +197,3 @@ QRect PositioningWindow::CalculateSuggestedPos(QRect *rect) {
 
     return suggested_pos;
 }
-
-void PositioningWindow::mouseReleaseEvent(QMouseEvent *event) {
-    if (isInField && which_ship!= -1) {
-        QRect suggested_pos = CalculateSuggestedPos(mas_rect[which_ship]);
-        mas_rect[which_ship]->moveTopLeft(suggested_pos.topLeft());
-        isPositioningInProcess = false;
-        update();
-    }
-}
-
-
