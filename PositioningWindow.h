@@ -14,6 +14,7 @@
 #include "MainGameWindow.h"
 #include <QDebug>
 #include "Ship.h"
+#include "Coordinates.h"
 
 class PositioningWindow : public QWidget
 {
@@ -27,6 +28,8 @@ private:
     void PaintRects();
     void MoveRects(QRect* rect);
     QRect CalculateSuggestedPos(QRect* rect);
+    bool CheckPos(const QRect &rect);
+    QPoint GetStartPos(int i);
 
     void paintEvent(QPaintEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
@@ -42,6 +45,7 @@ private:
     const int deck_size = length/10;
     QRect* field_rect;
     QRect* mas_rect[10];
+    int matrix[10][10];
 
     QPushButton* finishButton;
     MainGameWindow* gameWindow;
@@ -52,6 +56,7 @@ private:
     int which_ship = -1;
     bool isInField = false;
     bool isPositioningInProcess = false;
+    //bool isPositionAllowed = false;
 };
 
 #endif //SEABATTLE_POSITIONINGWINDOW_H
