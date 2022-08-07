@@ -37,13 +37,24 @@ void PositioningWindow::mousePressEvent(QMouseEvent *event) {
         for (int i = 0; i < sizeof(mas_rect) / sizeof(QRect *); i++) {
             if (mas_rect[i]->contains(event->pos())) {
                 if (field_rect->contains(event->pos())) {
-                    int size = mas_rect[i]->width() / deck_size;
-                    for (int j = 0; j < size; j++) {
-                        Coordinates coord = Coordinates::TranslateCoordinates(
-                                mas_rect[i]->topLeft() + QPoint(deck_size * j, 0), field_rect->topLeft(), deck_size);
-                        matrix[coord.getX()][coord.getY()] = 0;
+                    if (mas_rect[i]->width() > mas_rect[i]->height()) {
+                        for (int j = 0; j < mas_rect[i]->width() / deck_size; j++) {
+                            Coordinates coord = Coordinates::TranslateCoordinates(
+                                    mas_rect[i]->topLeft() + QPoint(deck_size * j, 0), field_rect->topLeft(),
+                                    deck_size);
+                            matrix[coord.getX()][coord.getY()] = 0;
+                        }
+                    } else {
+                        for (int j = 0; j < mas_rect[i]->height() / deck_size; j++) {
+                            Coordinates coord = Coordinates::TranslateCoordinates(
+                                    mas_rect[i]->topLeft() + QPoint(0, deck_size * j), field_rect->topLeft(),
+                                    deck_size);
+                            matrix[coord.getX()][coord.getY()] = 0;
+                        }
                     }
                 }
+
+
                 previous_point = event->pos();
                 which_ship = i;
                 isPositioningInProcess = true;
@@ -74,12 +85,20 @@ void PositioningWindow::mouseReleaseEvent(QMouseEvent *event) {
             QRect suggested_pos = CalculateSuggestedPos(mas_rect[which_ship]);
             if (CheckPos(suggested_pos)) {
                 mas_rect[which_ship]->moveTopLeft(suggested_pos.topLeft());
-                int size = suggested_pos.width() / deck_size;
-                for (int i = 0; i < size; i++) {
-                    Coordinates coord = Coordinates::TranslateCoordinates(
-                            suggested_pos.topLeft() + QPoint(deck_size * i, 0),
-                            field_rect->topLeft(), deck_size);
-                    matrix[coord.getX()][coord.getY()] = 1;
+                if (mas_rect[which_ship]->width() > mas_rect[which_ship]->height()) {
+                    for (int i = 0; i < suggested_pos.width() / deck_size; i++) {
+                        Coordinates coord = Coordinates::TranslateCoordinates(
+                                suggested_pos.topLeft() + QPoint(deck_size * i, 0),
+                                field_rect->topLeft(), deck_size);
+                        matrix[coord.getX()][coord.getY()] = 1;
+                    }
+                } else {
+                    for (int i = 0; i < suggested_pos.height() / deck_size; i++) {
+                        Coordinates coord = Coordinates::TranslateCoordinates(
+                                suggested_pos.topLeft() + QPoint(0, deck_size * i),
+                                field_rect->topLeft(), deck_size);
+                        matrix[coord.getX()][coord.getY()] = 1;
+                    }
                 }
                 isPositioningInProcess = false;
                 update();
@@ -87,10 +106,40 @@ void PositioningWindow::mouseReleaseEvent(QMouseEvent *event) {
 
             }
         }
+        if (mas_rect[which_ship]->width() < mas_rect[which_ship]->height()) {
+            int w = mas_rect[which_ship]->width();
+            mas_rect[which_ship]->setWidth(mas_rect[which_ship]->height());
+            mas_rect[which_ship]->setHeight(w);
+        }
         mas_rect[which_ship]->moveTopLeft(GetStartPos(which_ship));
         isPositioningInProcess = false;
         update();
 
+    }
+}
+
+void PositioningWindow::mouseDoubleClickEvent(QMouseEvent *event) {
+    for (int i = 0; i < sizeof(mas_rect) / sizeof(QRect *); i++) {
+        if (mas_rect[i]->contains(event->pos())) {
+            if (field_rect->contains(event->pos())) {
+                if (mas_rect[which_ship]->width() > mas_rect[which_ship]->height()) {
+                    for (int j = 0; j < mas_rect[i]->width() / deck_size; j++) {
+                        Coordinates coord = Coordinates::TranslateCoordinates(
+                                mas_rect[i]->topLeft() + QPoint(deck_size * j, 0), field_rect->topLeft(), deck_size);
+                        matrix[coord.getX()][coord.getY()] = 0;
+                    }
+                } else {
+                    for (int j = 0; j < mas_rect[i]->height() / deck_size; j++) {
+                        Coordinates coord = Coordinates::TranslateCoordinates(
+                                mas_rect[i]->topLeft() + QPoint(0, deck_size * j), field_rect->topLeft(), deck_size);
+                        matrix[coord.getX()][coord.getY()] = 0;
+                    }
+                }
+                int w = mas_rect[which_ship]->width();
+                mas_rect[which_ship]->setWidth(mas_rect[which_ship]->height());
+                mas_rect[which_ship]->setHeight(w);
+            }
+        }
     }
 }
 
@@ -109,16 +158,37 @@ void PositioningWindow::onFinish() {
     Ship *mas_ships[10];
     for (int i = 0; i < sizeof(mas_rect) / sizeof(QRect *); i++) {
 
-        int size = mas_rect[i]->width() / deck_size;
-        Deck **mas_decks = new Deck *[size];
-        for (int j = 0; j < size; j++) {
-            Deck *deck = new Deck(Coordinates::TranslateCoordinates(mas_rect[i]->topLeft() + QPoint(deck_size * j, 0),
-                                                                    field_rect->topLeft(), deck_size), j + 1);
-            mas_decks[j] = deck;
+        int size;
+        int j = 0;
+        QPoint point;
+
+        if (mas_rect[i]->width() > mas_rect[i]->height()) {
+            size = mas_rect[i]->width() / deck_size;
+        } else {
+            size = mas_rect[i]->height() / deck_size;
         }
+        Deck **mas_decks = new Deck *[size];
+
+        if (mas_rect[i]->width() > mas_rect[i]->height()) {
+            for (j = 0; j < size; j++) {
+                Deck *deck = new Deck(
+                        Coordinates::TranslateCoordinates(mas_rect[i]->topLeft() + QPoint(deck_size * j, 0),
+                                                          field_rect->topLeft(), deck_size), j + 1);
+                mas_decks[j] = deck;
+            }
+        } else {
+            for (j = 0; j < size; j++) {
+                Deck *deck = new Deck(
+                        Coordinates::TranslateCoordinates(mas_rect[i]->topLeft() + QPoint(0, deck_size * j),
+                                                          field_rect->topLeft(), deck_size), j + 1);
+                mas_decks[j] = deck;
+            }
+        }
+
         Ship *ship = new Ship(mas_decks, i + 1, size);
         mas_ships[i] = ship;
     }
+
 
     gameWindow = new MainGameWindow(mas_ships, mas_ships);
     gameWindow->resize(1100, 700);
@@ -164,9 +234,17 @@ void PositioningWindow::PaintRects() {
         }
 
         painter.drawRect(suggested_pos);
-        for (int i = 1; i < suggested_pos.width() / deck_size; i++) {
-            painter.drawLine(suggested_pos.topLeft() + QPoint(deck_size * i, 0),
-                             suggested_pos.bottomLeft() + QPoint(deck_size * i, 0));
+
+        if (suggested_pos.width() > suggested_pos.height()) {
+            for (int i = 1; i < suggested_pos.width() / deck_size; i++) {
+                painter.drawLine(suggested_pos.topLeft() + QPoint(deck_size * i, 0),
+                                 suggested_pos.bottomLeft() + QPoint(deck_size * i, 0));
+            }
+        } else {
+            for (int i = 1; i < suggested_pos.height() / deck_size; i++) {
+                painter.drawLine(suggested_pos.topLeft() + QPoint(0, deck_size * i),
+                                 suggested_pos.topRight() + QPoint(0, deck_size * i));
+            }
         }
     }
 
@@ -177,28 +255,19 @@ void PositioningWindow::PaintRects() {
         painter.drawRect(*mas_rect[i]);
     }
 
-    for (int i = 1; i <= 3; i++) {
-        painter.drawLine(mas_rect[0]->topLeft() + QPoint(deck_size * i, 0),
-                         mas_rect[0]->bottomLeft() + QPoint(deck_size * i, 0));
+    for (int i = 0; i < sizeof(mas_rect) / sizeof(QRect *); i++) {
+        if (mas_rect[i]->width() > mas_rect[i]->height()) {
+            for (int j = 1; j <= mas_rect[i]->width() / deck_size - 1; j++) {
+                painter.drawLine(mas_rect[i]->topLeft() + QPoint(deck_size * j, 0),
+                                 mas_rect[i]->bottomLeft() + QPoint(deck_size * j, 0));
+            }
+        } else {
+            for (int j = 1; j <= mas_rect[i]->height() / deck_size - 1; j++) {
+                painter.drawLine(mas_rect[i]->topLeft() + QPoint(0, deck_size * j),
+                                 mas_rect[i]->topRight() + QPoint(0, deck_size * j));
+            }
+        }
     }
-
-    for (int i = 1; i <= 2; i++) {
-        painter.drawLine(mas_rect[1]->topLeft() + QPoint(deck_size * i, 0),
-                         mas_rect[1]->bottomLeft() + QPoint(deck_size * i, 0));
-    }
-
-    for (int i = 1; i <= 2; i++) {
-        painter.drawLine(mas_rect[2]->topLeft() + QPoint(deck_size * i, 0),
-                         mas_rect[2]->bottomLeft() + QPoint(deck_size * i, 0));
-    }
-
-    painter.drawLine(mas_rect[3]->topLeft() + QPoint(deck_size, 0),
-                     mas_rect[3]->bottomLeft() + QPoint(deck_size, 0));
-    painter.drawLine(mas_rect[4]->topLeft() + QPoint(deck_size, 0),
-                     mas_rect[4]->bottomLeft() + QPoint(deck_size, 0));
-    painter.drawLine(mas_rect[5]->topLeft() + QPoint(deck_size, 0),
-                     mas_rect[5]->bottomLeft() + QPoint(deck_size, 0));
-
 }
 
 QPoint PositioningWindow::GetStartPos(int i) {
@@ -233,7 +302,7 @@ QPoint PositioningWindow::GetStartPos(int i) {
 
 QRect PositioningWindow::CalculateSuggestedPos(QRect *rect) {
     int distX = (rect->x() - field_rect->x()) / deck_size;
-    int distY = ((rect->y() + deck_size - field_rect->y()) / deck_size);
+    int distY = (rect->y() + deck_size * 0.99 - field_rect->y()) / deck_size;
 
     QRect suggested_pos(QPoint(field_rect->x() + distX * deck_size,
                                field_rect->y() + distY * deck_size), rect->size());
@@ -255,15 +324,29 @@ QRect PositioningWindow::CalculateSuggestedPos(QRect *rect) {
 }
 
 bool PositioningWindow::CheckPos(const QRect &rect) {
-    int size = rect.width() / deck_size;
-
-    for (int i = 0; i < size; i++) {
-        Coordinates coord = Coordinates::TranslateCoordinates(rect.topLeft() + QPoint(deck_size * i, 0),
-                                                              field_rect->topLeft(), deck_size);
-        for (int j = -1; j <= 1; j++) {
-            for (int k = -1; k <= 1; k++) {
-                if (coord.getX() + j >= 0 && coord.getX() + j < 10 && coord.getY() + k >= 0 && coord.getY() + k < 10) {
-                    if (matrix[coord.getX() + j][coord.getY() + k] == 1) return false;
+    if (mas_rect[which_ship]->width() > mas_rect[which_ship]->height()) {
+        for (int i = 0; i < rect.width() / deck_size; i++) {
+            Coordinates coord = Coordinates::TranslateCoordinates(rect.topLeft() + QPoint(deck_size * i, 0),
+                                                                  field_rect->topLeft(), deck_size);
+            for (int j = -1; j <= 1; j++) {
+                for (int k = -1; k <= 1; k++) {
+                    if (coord.getX() + j >= 0 && coord.getX() + j < 10 && coord.getY() + k >= 0 &&
+                        coord.getY() + k < 10) {
+                        if (matrix[coord.getX() + j][coord.getY() + k] == 1) return false;
+                    }
+                }
+            }
+        }
+    } else {
+        for (int i = 0; i < rect.height() / deck_size; i++) {
+            Coordinates coord = Coordinates::TranslateCoordinates(rect.topLeft() + QPoint(0, deck_size * i),
+                                                                  field_rect->topLeft(), deck_size);
+            for (int j = -1; j <= 1; j++) {
+                for (int k = -1; k <= 1; k++) {
+                    if (coord.getX() + j >= 0 && coord.getX() + j < 10 && coord.getY() + k >= 0 &&
+                        coord.getY() + k < 10) {
+                        if (matrix[coord.getX() + j][coord.getY() + k] == 1) return false;
+                    }
                 }
             }
         }

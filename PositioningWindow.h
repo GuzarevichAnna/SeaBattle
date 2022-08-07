@@ -15,40 +15,51 @@
 #include <QDebug>
 #include "Ship.h"
 #include "Coordinates.h"
+#include <algorithm>
 
-class PositioningWindow : public QWidget
-{
-    Q_OBJECT
+class PositioningWindow : public QWidget {
+Q_OBJECT
 
 public:
     PositioningWindow();
 
 private:
     void PaintEmptyField();
+
     void PaintRects();
-    void MoveRects(QRect* rect);
-    QRect CalculateSuggestedPos(QRect* rect);
+
+    void MoveRects(QRect *rect);
+
+    QRect CalculateSuggestedPos(QRect *rect);
+
     bool CheckPos(const QRect &rect);
+
     QPoint GetStartPos(int i);
 
     void paintEvent(QPaintEvent *event) override;
+
     void mousePressEvent(QMouseEvent *event) override;
+
     void mouseMoveEvent(QMouseEvent *event) override;
+
     void mouseReleaseEvent(QMouseEvent *event) override;
+
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
 
 
 private slots:
+
     void onFinish();
 
 private:
     const int length = 400;
-    const int deck_size = length/10;
-    QRect* field_rect;
-    QRect* mas_rect[10];
+    const int deck_size = length / 10;
+    QRect *field_rect;
+    QRect *mas_rect[10];
     int matrix[10][10];
 
-    QPushButton* finishButton;
-    MainGameWindow* gameWindow;
+    QPushButton *finishButton;
+    MainGameWindow *gameWindow;
 
     QPoint previous_point;
     QPoint cur_point;
@@ -56,7 +67,6 @@ private:
     int which_ship = -1;
     bool isInField = false;
     bool isPositioningInProcess = false;
-    //bool isPositionAllowed = false;
 };
 
 #endif //SEABATTLE_POSITIONINGWINDOW_H
