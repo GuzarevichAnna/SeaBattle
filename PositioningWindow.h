@@ -36,6 +36,8 @@ private:
 
     QPoint GetStartPos(int i);
 
+    void EditMatrix(QRect* rect, int value);
+
     void paintEvent(QPaintEvent *event) override;
 
     void mousePressEvent(QMouseEvent *event) override;
@@ -50,6 +52,7 @@ private:
 private slots:
 
     void onFinish();
+    void onAuto();
 
 private:
     const int length = 400;
@@ -59,6 +62,7 @@ private:
     int matrix[10][10];
 
     QPushButton *finishButton;
+    QPushButton *autoButton;
     MainGameWindow *gameWindow;
 
     QPoint previous_point;
