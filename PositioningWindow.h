@@ -38,6 +38,10 @@ private:
 
     void EditMatrix(QRect* rect, int value);
 
+    void GenerateShipsForRobot(Ship** mas_ships);
+
+    bool CheckLocRobot(Coordinates* suggested_loc, int length);
+
     void paintEvent(QPaintEvent *event) override;
 
     void mousePressEvent(QMouseEvent *event) override;
@@ -60,6 +64,7 @@ private:
     QRect *field_rect;
     QRect *mas_rect[10];
     int matrix[10][10];
+    int matrix_robot[10][10];
 
     QPushButton *finishButton;
     QPushButton *autoButton;

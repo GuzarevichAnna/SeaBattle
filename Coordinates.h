@@ -12,6 +12,9 @@ public:
         y = y_;
     }
 
+    Coordinates(){}
+
+
 
     int getX() const {
         return x;

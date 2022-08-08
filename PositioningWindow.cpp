@@ -14,6 +14,12 @@ PositioningWindow::PositioningWindow() {
         }
     }
 
+    for (int i = 0; i < 10; ++i) {
+        for (int j = 0; j < 10; ++j) {
+            matrix_robot[i][j] = 0;
+        }
+    }
+
     QVBoxLayout *mainLayout = new QVBoxLayout();
     mainLayout->addWidget(autoButton);
     mainLayout->addWidget(finishButton);
@@ -149,8 +155,18 @@ void PositioningWindow::onFinish() {
         mas_ships[i] = ship;
     }
 
+    Ship* mas_ships_robot[10];
 
-    gameWindow = new MainGameWindow(mas_ships, mas_ships);
+    GenerateShipsForRobot(mas_ships_robot);
+
+    for (int i = 0; i < 10; ++i) {
+        QDebug deb = qDebug();
+        for (int j = 0; j < 10; ++j) {
+            deb << matrix_robot[j][i];
+        }
+    }
+
+    gameWindow = new MainGameWindow(mas_ships, mas_ships_robot);
     gameWindow->resize(1100, 700);
     gameWindow->show();
     this->close();
@@ -375,4 +391,74 @@ void PositioningWindow::EditMatrix(QRect *rect, int value) {
             matrix[coord.getX()][coord.getY()] = value;
         }
     }
+}
+
+void PositioningWindow::GenerateShipsForRobot(Ship **mas_ships) {
+
+    srand(time(NULL));
+
+    for (int i = 0; i < 10; i++) {
+        int length;
+        if (i == 0) length = 4;
+        else if (i < 3) length = 3;
+        else if (i < 6) length = 2;
+        else length = 1;
+
+        Coordinates suggested_loc[length];
+        suggested_loc[0] = Coordinates(-1, -1);
+
+        while (!CheckLocRobot(suggested_loc, length)) {
+            bool isHorizontal = rand() % 2;
+            int x, y;
+            if (isHorizontal) {
+                x = rand() % (10 - length + 1);
+                y = rand() % 10;
+            } else {
+                x = rand() % 10;
+                y = rand() % (10 - length + 1);
+            }
+
+            if (isHorizontal) {
+                for (int j = 0; j < length; j++) {
+                    Coordinates coord(x + j, y);
+                    suggested_loc[j] = coord;
+                }
+            } else {
+                for (int j = 0; j < length; j++) {
+                    Coordinates coord(x, y + j);
+                    suggested_loc[j] = coord;
+                }
+            }
+        }
+
+        Deck **mas_decks = new Deck *[length];
+
+        for (int j = 0; j < length; j++) {
+            Deck *deck = new Deck(suggested_loc[j], j + 1);
+            mas_decks[j] = deck;
+            matrix_robot[suggested_loc[j].getX()][suggested_loc[j].getY()] = 1;
+        }
+
+
+        Ship *ship = new Ship(mas_decks, i + 1, length);
+        mas_ships[i] = ship;
+    }
+}
+
+bool PositioningWindow::CheckLocRobot(Coordinates *suggested_loc, int length) {
+    if(suggested_loc[0].getX() == -1) return false;
+
+    for (int i = 0; i < length; ++i) {
+        Coordinates coord = suggested_loc[i];
+        for (int j = -1; j <= 1; j++) {
+            for (int k = -1; k <= 1; k++) {
+                if (coord.getX() + j >= 0 && coord.getX() + j < 10 && coord.getY() + k >= 0 &&
+                    coord.getY() + k < 10) {
+                    if (matrix_robot[coord.getX() + j][coord.getY() + k] == 1) return false;
+                }
+            }
+        }
+    }
+
+    return true;
 }
