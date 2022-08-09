@@ -11,6 +11,9 @@
 #include <QBrush>
 #include "Field.h"
 #include "Coordinates.h"
+#include <Windows.h>
+#include <QTimer>
+
 
 
 class MainGameWindow : public QMainWindow {
@@ -28,6 +31,11 @@ public:
     void PaintEmptyFields();
     void PaintShips();
 
+    bool EventFilter(QEvent *event);
+
+private slots:
+    void TimerAlarm();
+
 private:
     const int length = 400;
     const int deck_size = length/10;
@@ -40,6 +48,11 @@ private:
 
     QRect* field_rect_user;
     QRect* field_rect_robot;
+
+    bool isUsersTurn;
+    bool control;
+
+    QTimer* timer;
 };
 
 
