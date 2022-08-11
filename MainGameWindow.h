@@ -22,14 +22,15 @@ class MainGameWindow : public QMainWindow {
 
 public:
     MainGameWindow(Ship** mas_ships_user, Ship** mas_ships_robot);
-    ~MainGameWindow()= default;
 
     void paintEvent(QPaintEvent *) override;
     void mousePressEvent(QMouseEvent *) override;
-
+    void mouseMoveEvent(QMouseEvent *event) override;
 
     void PaintEmptyFields();
     void PaintShips();
+    void PaintPosRobot();
+    void PaintPosUser();
 
     bool EventFilter(QEvent *event);
 
@@ -51,8 +52,14 @@ private:
 
     bool isUsersTurn;
     bool control;
+    bool isShootingInProcess;
 
     QTimer* timer;
+
+    int suggestedX = 1;
+    int suggestedY = 2;
+
+    Coordinates suggestedCoord;
 };
 
 

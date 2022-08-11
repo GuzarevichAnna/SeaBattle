@@ -15,7 +15,6 @@ public:
     Coordinates(){}
 
 
-
     int getX() const {
         return x;
     }

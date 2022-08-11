@@ -2,25 +2,30 @@
 #include "MainGameWindow.h"
 #include <QDebug>
 
-MainGameWindow::MainGameWindow(Ship** mas_ships_user, Ship** mas_ships_robot) {
+MainGameWindow::MainGameWindow(Ship **mas_ships_user, Ship **mas_ships_robot) {
     field_user = new Field(mas_ships_user);
     field_robot = new Field(mas_ships_robot);
     corner_user = new QPoint(70, 70);
     corner_robot = new QPoint(600, 70);
     isUsersTurn = true;
+    isShootingInProcess = false;
 
     timer = new QTimer();
     connect(timer, SIGNAL(timeout()), this, SLOT(TimerAlarm()));
     control = false;
+
+    setMouseTracking(true);
 }
 
 void MainGameWindow::paintEvent(QPaintEvent *) {
     PaintEmptyFields();
     PaintShips();
+    if (isShootingInProcess) PaintPosRobot();
+    if (isUsersTurn) PaintPosUser();
 }
 
 void MainGameWindow::mousePressEvent(QMouseEvent *event) {
-    if(EventFilter(event)) return;
+    if (EventFilter(event)) return;
 
     srand(time(NULL));
     if (event->button() == Qt::LeftButton) {
@@ -36,24 +41,37 @@ void MainGameWindow::mousePressEvent(QMouseEvent *event) {
             repaint();
         }
 
-        while(!isUsersTurn) {
+        while (!isUsersTurn) {
             control = true;
-            Sleep(3000);
-            timer->start(100);
+            Sleep(1500);
+
 
             int x, y;
-            x = rand() % 10;
-            y = rand() % 10;
-            if (field_user->matrix[x][y] > 0) {
-                field_user->matrix[x][y] = -2;
-            } else if (field_user->matrix[x][y] == 0) {
-                field_user->matrix[x][y] = -1;
+            suggestedX = rand() % 10;
+            suggestedY = rand() % 10;
+            isShootingInProcess = true;
+            repaint();
+            isShootingInProcess = false;
+            Sleep(1000);
+            timer->start(100);
+
+            if (field_user->matrix[suggestedX][suggestedY] > 0) {
+                field_user->matrix[suggestedX][suggestedY] = -2;
+            } else if (field_user->matrix[suggestedX][suggestedY] == 0) {
+                field_user->matrix[suggestedX][suggestedY] = -1;
                 isUsersTurn = true;
             }
 
             repaint();
         }
     }
+}
+
+void MainGameWindow::mouseMoveEvent(QMouseEvent *event) {
+    if (isUsersTurn && field_rect_robot->contains(event->pos()))
+        suggestedCoord = Coordinates::TranslateCoordinates(event->pos(), *corner_robot, deck_size);
+    else suggestedCoord = Coordinates(-1, -1);
+    update();
 }
 
 void MainGameWindow::PaintEmptyFields() {
@@ -99,28 +117,29 @@ void MainGameWindow::PaintShips() {
                                  deck_size,
                                  deck_size);
 
-            } else if (field_user->matrix[column][row] == -2){
+            } else if (field_user->matrix[column][row] == -2) {
 
-            painter.setPen(bluePen);
-            painter.setBrush(blueBrush);
-            painter.drawRect(corner_user->x() + deck_size * column, corner_user->y() + deck_size * row,
-                             deck_size,
-                             deck_size);
+                painter.setPen(bluePen);
+                painter.setBrush(blueBrush);
+                painter.drawRect(corner_user->x() + deck_size * column, corner_user->y() + deck_size * row,
+                                 deck_size,
+                                 deck_size);
 
-            painter.setPen(redPen);
-            painter.drawLine(QPoint(corner_user->x() + deck_size * column + 2, corner_user->y() + deck_size * row + 2),
-                             QPoint(corner_user->x() + deck_size * (column + 1) - 2,
-                                    corner_user->y() + deck_size * (row + 1) - 2));
-            painter.drawLine(
-                    QPoint(corner_user->x() + deck_size * (column + 1) - 2, corner_user->y() + deck_size * row + 2),
-                    QPoint(corner_user->x() + deck_size * (column) + 2,
-                           corner_user->y() + deck_size * (row + 1) - 2));
-        } else if (field_user->matrix[column][row] == -1){
+                painter.setPen(redPen);
+                painter.drawLine(
+                        QPoint(corner_user->x() + deck_size * column + 2, corner_user->y() + deck_size * row + 2),
+                        QPoint(corner_user->x() + deck_size * (column + 1) - 2,
+                               corner_user->y() + deck_size * (row + 1) - 2));
+                painter.drawLine(
+                        QPoint(corner_user->x() + deck_size * (column + 1) - 2, corner_user->y() + deck_size * row + 2),
+                        QPoint(corner_user->x() + deck_size * (column) + 2,
+                               corner_user->y() + deck_size * (row + 1) - 2));
+            } else if (field_user->matrix[column][row] == -1) {
 
-                    painter.setPen(darkBluePen);
-                    painter.setBrush(darkBlueBrush);
-                    painter.drawEllipse(QPoint(corner_user->x() + deck_size * column + deck_size * 0.5,
-                                               corner_user->y() + deck_size * row + deck_size * 0.5), 4, 4);
+                painter.setPen(darkBluePen);
+                painter.setBrush(darkBlueBrush);
+                painter.drawEllipse(QPoint(corner_user->x() + deck_size * column + deck_size * 0.5,
+                                           corner_user->y() + deck_size * row + deck_size * 0.5), 4, 4);
             }
         }
     }
@@ -129,18 +148,20 @@ void MainGameWindow::PaintShips() {
     for (int column = 0; column < 10; column++) {
         for (int row = 0; row < 10; row++) {
 
-             if (field_robot->matrix[column][row] == -2){
+            if (field_robot->matrix[column][row] == -2) {
 
 
                 painter.setPen(redPen);
-                painter.drawLine(QPoint(corner_robot->x() + deck_size * column + 2, corner_robot->y() + deck_size * row + 2),
-                                 QPoint(corner_robot->x() + deck_size * (column + 1) - 2,
-                                        corner_robot->y() + deck_size * (row + 1) - 2));
                 painter.drawLine(
-                        QPoint(corner_robot->x() + deck_size * (column + 1) - 2, corner_robot->y() + deck_size * row + 2),
+                        QPoint(corner_robot->x() + deck_size * column + 2, corner_robot->y() + deck_size * row + 2),
+                        QPoint(corner_robot->x() + deck_size * (column + 1) - 2,
+                               corner_robot->y() + deck_size * (row + 1) - 2));
+                painter.drawLine(
+                        QPoint(corner_robot->x() + deck_size * (column + 1) - 2,
+                               corner_robot->y() + deck_size * row + 2),
                         QPoint(corner_robot->x() + deck_size * (column) + 2,
                                corner_robot->y() + deck_size * (row + 1) - 2));
-            } else if (field_robot->matrix[column][row] == -1){
+            } else if (field_robot->matrix[column][row] == -1) {
 
                 painter.setPen(darkBluePen);
                 painter.setBrush(darkBlueBrush);
@@ -151,16 +172,32 @@ void MainGameWindow::PaintShips() {
     }
 }
 
-void MainGameWindow::TimerAlarm()
-{
+void MainGameWindow::PaintPosRobot() {
+    QPainter painter(this);
+    QPen darkBluePen(QColorConstants::Svg::darkblue, 3);
+    painter.setPen(darkBluePen);
+    painter.drawRect(suggestedX * deck_size + corner_user->x(), suggestedY * deck_size + corner_user->y(), deck_size,
+                     deck_size);
+}
+
+void MainGameWindow::PaintPosUser() {
+    QPainter painter(this);
+    QPen darkBluePen(QColorConstants::Svg::darkblue, 3);
+    painter.setPen(darkBluePen);
+
+    if(suggestedCoord.getX()!= -1)
+        painter.drawRect(QRect(suggestedCoord.getX() * deck_size + corner_robot->x(),
+                               suggestedCoord.getY() * deck_size + corner_robot->y(), deck_size, deck_size));
+}
+
+void MainGameWindow::TimerAlarm() {
     control = false;
     timer->stop();
 }
 
-bool MainGameWindow::EventFilter(QEvent *event)
-{
+bool MainGameWindow::EventFilter(QEvent *event) {
     if (control && event->type() == QEvent::MouseButtonPress) {
-            return true;
-        }
+        return true;
+    }
     return false;
 }
