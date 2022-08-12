@@ -5,8 +5,8 @@
 MainGameWindow::MainGameWindow(Ship **mas_ships_user, Ship **mas_ships_robot) {
     field_user = new Field(mas_ships_user);
     field_robot = new Field(mas_ships_robot);
-    corner_user = new QPoint(70, 70);
-    corner_robot = new QPoint(600, 70);
+    corner_user = new QPoint(120, 70);
+    corner_robot = new QPoint(750, 70);
     isUsersTurn = true;
     isShootingInProcess = false;
 
@@ -22,6 +22,24 @@ void MainGameWindow::paintEvent(QPaintEvent *) {
     PaintShips();
     if (isShootingInProcess) PaintPosRobot();
     if (isUsersTurn) PaintPosUser();
+
+    QPainter painter(this);
+    QPolygon triangle;
+    QPen darkBluePen(QColorConstants::Svg::orange, 3);
+    QBrush blueBrush(QColorConstants::Svg::beige);
+    painter.setPen(darkBluePen);
+    painter.setBrush(blueBrush);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    if(isUsersTurn){
+        triangle<<field_rect_user->topRight() + QPoint(85, deck_size*3.5);
+        triangle<<field_rect_user->bottomRight()+QPoint(85, -deck_size*3.5);
+        triangle<<field_rect_user->topRight() + QPoint(140, deck_size*5);
+    } else{
+        triangle<<field_rect_user->topRight() + QPoint(125, deck_size*3.5);
+        triangle<<field_rect_user->bottomRight()+QPoint(125, -deck_size*3.5);
+        triangle<<field_rect_user->topRight() + QPoint(70, deck_size*5);
+    }
+    painter.drawPolygon(triangle);
 }
 
 void MainGameWindow::mousePressEvent(QMouseEvent *event) {
@@ -45,10 +63,11 @@ void MainGameWindow::mousePressEvent(QMouseEvent *event) {
             control = true;
             Sleep(1500);
 
+            do{
+                suggestedX = rand() % 10;
+                suggestedY = rand() % 10;
+            } while(field_user->matrix[suggestedX][suggestedY] < 0);
 
-            int x, y;
-            suggestedX = rand() % 10;
-            suggestedY = rand() % 10;
             isShootingInProcess = true;
             repaint();
             isShootingInProcess = false;
@@ -90,12 +109,32 @@ void MainGameWindow::PaintEmptyFields() {
         painter.drawLine(*corner_user + QPoint(0, deck_size * i), *corner_user + QPoint(length, deck_size * i));
     }
 
+    painter.setFont (QFont ( "Calibri", 15, QFont:: Normal) );
+    for (int i = 0; i <9 ; i++) {
+        painter.drawText(*corner_user + QPoint(-deck_size*0.7, deck_size*(i+0.8)), QString::number(i+1));
+    }
+    painter.drawText(*corner_user + QPoint(-deck_size, deck_size*(9.8)), QString::number(10));
+
+    for(char i = 65; i<75;i++){
+        painter.drawText(*corner_user + QPoint(deck_size*(i-65+0.3), -deck_size*0.2), QString(QChar(i)));
+    }
+
+
     field_rect_robot = new QRect(*corner_robot, field_size);
     painter.drawRect(*field_rect_robot);
 
     for (int i = 1; i < 10; i++) {
         painter.drawLine(*corner_robot + QPoint(deck_size * i, 0), *corner_robot + QPoint(deck_size * i, length));
         painter.drawLine(*corner_robot + QPoint(0, deck_size * i), *corner_robot + QPoint(length, deck_size * i));
+    }
+
+    for (int i = 0; i <9 ; i++) {
+        painter.drawText(*corner_robot + QPoint(-deck_size*0.7, deck_size*(i+0.8)), QString::number(i+1));
+    }
+    painter.drawText(*corner_robot + QPoint(-deck_size, deck_size*(9.8)), QString::number(10));
+
+    for(char i = 65; i<75;i++){
+        painter.drawText(*corner_robot + QPoint(deck_size*(i-65+0.3), -deck_size*0.2), QString(QChar(i)));
     }
 }
 

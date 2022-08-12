@@ -13,6 +13,7 @@
 #include "Coordinates.h"
 #include <Windows.h>
 #include <QTimer>
+#include <QPolygon>
 
 
 

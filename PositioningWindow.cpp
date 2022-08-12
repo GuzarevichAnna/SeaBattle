@@ -2,7 +2,7 @@
 #include "PositioningWindow.h"
 
 PositioningWindow::PositioningWindow() {
-    field_rect = new QRect(QPoint(70, 70), QSize(length, length));
+    field_rect = new QRect(QPoint(100, 70), QSize(length, length));
     finishButton = new QPushButton("Finish positioning");
     autoButton = new QPushButton("Auto positioning");
     connect(finishButton, SIGNAL(clicked(bool)), SLOT(onFinish()));
@@ -155,7 +155,7 @@ void PositioningWindow::onFinish() {
         mas_ships[i] = ship;
     }
 
-    Ship* mas_ships_robot[10];
+    Ship *mas_ships_robot[10];
 
     GenerateShipsForRobot(mas_ships_robot);
 
@@ -167,7 +167,7 @@ void PositioningWindow::onFinish() {
     }
 
     gameWindow = new MainGameWindow(mas_ships, mas_ships_robot);
-    gameWindow->resize(1100, 700);
+    gameWindow->resize(1300, 700);
     gameWindow->show();
     this->close();
 }
@@ -228,6 +228,16 @@ void PositioningWindow::PaintEmptyField() {
                          field_rect->topLeft() + QPoint(deck_size * i, length));
         painter.drawLine(field_rect->topLeft() + QPoint(0, deck_size * i),
                          field_rect->topLeft() + QPoint(length, deck_size * i));
+    }
+
+    painter.setFont(QFont("Calibri", 15, QFont::Normal));
+    for (int i = 0; i < 9; i++) {
+        painter.drawText(field_rect->topLeft() + QPoint(-deck_size * 0.7, deck_size * (i + 0.8)), QString::number(i + 1));
+    }
+    painter.drawText(field_rect->topLeft() + QPoint(-deck_size, deck_size * (9.8)), QString::number(10));
+
+    for (char i = 65; i < 75; i++) {
+        painter.drawText(field_rect->topLeft() + QPoint(deck_size * (i - 65 + 0.3), -deck_size * 0.2), QString(QChar(i)));
     }
 }
 
@@ -446,7 +456,7 @@ void PositioningWindow::GenerateShipsForRobot(Ship **mas_ships) {
 }
 
 bool PositioningWindow::CheckLocRobot(Coordinates *suggested_loc, int length) {
-    if(suggested_loc[0].getX() == -1) return false;
+    if (suggested_loc[0].getX() == -1) return false;
 
     for (int i = 0; i < length; ++i) {
         Coordinates coord = suggested_loc[i];
