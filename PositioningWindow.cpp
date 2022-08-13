@@ -139,19 +139,19 @@ void PositioningWindow::onFinish() {
             for (j = 0; j < size; j++) {
                 Deck *deck = new Deck(
                         Coordinates::TranslateCoordinates(mas_rect[i]->topLeft() + QPoint(deck_size * j, 0),
-                                                          field_rect->topLeft(), deck_size), j + 1);
+                                                          field_rect->topLeft(), deck_size));
                 mas_decks[j] = deck;
             }
         } else {
             for (j = 0; j < size; j++) {
                 Deck *deck = new Deck(
                         Coordinates::TranslateCoordinates(mas_rect[i]->topLeft() + QPoint(0, deck_size * j),
-                                                          field_rect->topLeft(), deck_size), j + 1);
+                                                          field_rect->topLeft(), deck_size));
                 mas_decks[j] = deck;
             }
         }
 
-        Ship *ship = new Ship(mas_decks, i + 1, size);
+        Ship *ship = new Ship(mas_decks, size);
         mas_ships[i] = ship;
     }
 
@@ -444,13 +444,13 @@ void PositioningWindow::GenerateShipsForRobot(Ship **mas_ships) {
         Deck **mas_decks = new Deck *[length];
 
         for (int j = 0; j < length; j++) {
-            Deck *deck = new Deck(suggested_loc[j], j + 1);
+            Deck *deck = new Deck(suggested_loc[j]);
             mas_decks[j] = deck;
             matrix_robot[suggested_loc[j].getX()][suggested_loc[j].getY()] = 1;
         }
 
 
-        Ship *ship = new Ship(mas_decks, i + 1, length);
+        Ship *ship = new Ship(mas_decks, length);
         mas_ships[i] = ship;
     }
 }

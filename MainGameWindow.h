@@ -22,7 +22,7 @@ class MainGameWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    MainGameWindow(Ship** mas_ships_user, Ship** mas_ships_robot);
+    MainGameWindow(Ship** mas_ships_user_, Ship** mas_ships_robot_);
 
     void paintEvent(QPaintEvent *) override;
     void mousePressEvent(QMouseEvent *) override;
@@ -32,6 +32,10 @@ public:
     void PaintShips();
     void PaintPosRobot();
     void PaintPosUser();
+    void PaintTriangle();
+    void PaintShotUsersShips();
+    void PaintShotRobotsShips();
+
 
     bool EventFilter(QEvent *event);
 
@@ -50,6 +54,9 @@ private:
 
     QRect* field_rect_user;
     QRect* field_rect_robot;
+
+    Ship* mas_ships_user[10];
+    Ship* mas_ships_robot[10];
 
     bool isUsersTurn;
     bool control;

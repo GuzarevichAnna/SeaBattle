@@ -3,8 +3,8 @@
 
 Field::Field(Ship **mas_ships) {
 
-    int x_coord;
-    int y_coord;
+    //int x_coord;
+    //int y_coord;
 
 
     for (int i = 0; i < 10; i++) {
@@ -17,7 +17,8 @@ Field::Field(Ship **mas_ships) {
         Ship *cur_ship = mas_ships[i];
         for (int j = 0; j < cur_ship->size; j++) {
             Deck *cur_deck = cur_ship->mas_decks[j];
-            matrix[cur_deck->coord.getX()][cur_deck->coord.getY()] = cur_ship->id * 10 + cur_deck->id;
+            //matrix[cur_deck->coord.getX()][cur_deck->coord.getY()] = cur_ship->id * 10 + cur_deck->id;
+            matrix[cur_deck->coord.getX()][cur_deck->coord.getY()] = (i+1) * 10 + (j+1);
         }
     }
 }

@@ -6,20 +6,30 @@
 class Deck {
 public:
 
-    Deck(Coordinates coord_, int id_) : coord(coord_) {
-        id = id_;
+    Deck(Coordinates coord_) : coord(coord_) {
+        //id = id_;
         state = SAFE_DECK;
     }
 
-    int id;
-    Coordinates coord;
-
-private:
-    enum State{
+    enum State_Deck{
         SAFE_DECK = 0,
         SHOT_DECK = 1
     };
-    State state;
+
+    State_Deck GetState(){
+        return state;
+    }
+
+    void SetState(State_Deck state_){
+        state = state_;
+    }
+
+    //int id;
+    Coordinates coord;
+
+private:
+
+    State_Deck state;
 
 
 };
