@@ -14,15 +14,20 @@
 #include <Windows.h>
 #include <QTimer>
 #include <QPolygon>
+#include <QLabel>
+#include <QVBoxLayout>
+#include <QPushButton>
 
 
-
-class MainGameWindow : public QMainWindow {
+class MainGameWindow : public QWidget {
 
     Q_OBJECT
 
 public:
-    MainGameWindow(Ship** mas_ships_user_, Ship** mas_ships_robot_);
+    //MainGameWindow(Ship** mas_ships_user_, Ship** mas_ships_robot_);
+    MainGameWindow();
+
+    void SetUpWindow(Ship** mas_ships_user_, Ship** mas_ships_robot_);
 
     void paintEvent(QPaintEvent *) override;
     void mousePressEvent(QMouseEvent *) override;
@@ -35,12 +40,17 @@ public:
     void PaintTriangle();
     void PaintShotUsersShips();
     void PaintShotRobotsShips();
+    bool isGameOver(Ship** mas_ships);
 
 
     bool EventFilter(QEvent *event);
 
 private slots:
     void TimerAlarm();
+    void onNewGame();
+
+signals:
+    void openPosWindow();
 
 private:
     const int length = 400;
@@ -58,9 +68,12 @@ private:
     Ship* mas_ships_user[10];
     Ship* mas_ships_robot[10];
 
+    QPushButton * newGameButton;
+
     bool isUsersTurn;
     bool control;
     bool isShootingInProcess;
+    bool gameOver;
 
     QTimer* timer;
 
@@ -68,6 +81,8 @@ private:
     int suggestedY = 2;
 
     Coordinates suggestedCoord;
+
+    QLabel* gameOverLabel;
 };
 
 

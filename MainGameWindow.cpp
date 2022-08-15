@@ -2,26 +2,46 @@
 #include "MainGameWindow.h"
 #include <QDebug>
 
-MainGameWindow::MainGameWindow(Ship **mas_ships_user_, Ship **mas_ships_robot_) {
-
-    field_user = new Field(mas_ships_user_);
-    field_robot = new Field(mas_ships_robot_);
+MainGameWindow::MainGameWindow(){
     corner_user = new QPoint(120, 70);
     corner_robot = new QPoint(750, 70);
 
-    for (int i = 0; i < 10; i++) {
-        mas_ships_user[i] = mas_ships_user_[i];
-        mas_ships_robot[i] = mas_ships_robot_[i];
-    }
+    newGameButton = new QPushButton("New game");
+    connect(newGameButton, SIGNAL(clicked(bool)), SLOT(onNewGame()));
 
     isUsersTurn = true;
     isShootingInProcess = false;
+    gameOver = false;
 
     timer = new QTimer();
     connect(timer, SIGNAL(timeout()), this, SLOT(TimerAlarm()));
     control = false;
 
+    gameOverLabel = new QLabel;
+    QFont font("Calibri", 20);
+    gameOverLabel->setFont(font);
+    QPalette palette;
+    palette.setColor(QPalette::WindowText, Qt::red);
+    gameOverLabel->setPalette(palette);
+    gameOverLabel->hide();
+
+    QVBoxLayout *mainLayout = new QVBoxLayout();
+    mainLayout->addWidget(gameOverLabel);
+    mainLayout->addWidget(newGameButton);
+    mainLayout->setContentsMargins(500, 620, 500, 20);
+    setLayout(mainLayout);
+
     setMouseTracking(true);
+}
+
+void MainGameWindow::SetUpWindow(Ship **mas_ships_user_, Ship **mas_ships_robot_) {
+    field_user = new Field(mas_ships_user_);
+    field_robot = new Field(mas_ships_robot_);
+
+    for (int i = 0; i < 10; i++) {
+        mas_ships_user[i] = mas_ships_user_[i];
+        mas_ships_robot[i] = mas_ships_robot_[i];
+    }
 }
 
 void MainGameWindow::paintEvent(QPaintEvent *) {
@@ -35,6 +55,7 @@ void MainGameWindow::paintEvent(QPaintEvent *) {
 }
 
 void MainGameWindow::mousePressEvent(QMouseEvent *event) {
+    if(gameOver) return;
     if (EventFilter(event)) return;
 
     srand(time(NULL));
@@ -64,6 +85,10 @@ void MainGameWindow::mousePressEvent(QMouseEvent *event) {
                                     }
                                 }
                             }
+                        }
+                        if(isGameOver(mas_ships_robot)){
+                            gameOverLabel->setText("Victory!");
+                            gameOverLabel->show();
                         }
                     }
                 }
@@ -114,6 +139,11 @@ void MainGameWindow::mousePressEvent(QMouseEvent *event) {
                                 }
                             }
                         }
+                        if(isGameOver(mas_ships_user)){
+                            gameOverLabel->setText("Defeat!");
+                            gameOverLabel->show();
+                        }
+
                     }
                 }
                 field_user->matrix[suggestedX][suggestedY] = -2;
@@ -128,6 +158,7 @@ void MainGameWindow::mousePressEvent(QMouseEvent *event) {
     }
 
 void MainGameWindow::mouseMoveEvent(QMouseEvent *event) {
+    if(gameOver) return;
     if (isUsersTurn && field_rect_robot->contains(event->pos()))
         suggestedCoord = Coordinates::TranslateCoordinates(event->pos(), *corner_robot, deck_size);
     else suggestedCoord = Coordinates(-1, -1);
@@ -253,6 +284,7 @@ void MainGameWindow::PaintShips() {
 }
 
 void MainGameWindow::PaintPosRobot() {
+    if(gameOver) return;
     QPainter painter(this);
     QPen darkBluePen(QColorConstants::Svg::darkblue, 3);
     painter.setPen(darkBluePen);
@@ -261,6 +293,7 @@ void MainGameWindow::PaintPosRobot() {
 }
 
 void MainGameWindow::PaintPosUser() {
+    if(gameOver) return;
     QPainter painter(this);
     QPen darkBluePen(QColorConstants::Svg::darkblue, 3);
     painter.setPen(darkBluePen);
@@ -382,4 +415,17 @@ void MainGameWindow::PaintShotUsersShips() {
             }
         }
     }
+}
+
+bool MainGameWindow::isGameOver(Ship **mas_ships) {
+    for (int i = 0; i < 10; i++) {
+        if(mas_ships[i]->GetState()==Ship::SAFE_SHIP) return false;
+    }
+    gameOver = true;
+    return true;
+}
+
+void MainGameWindow::onNewGame() {
+    this->close();
+    emit openPosWindow();
 }

@@ -34,6 +34,9 @@ PositioningWindow::PositioningWindow() {
         else rect_size = QSize(deck_size, deck_size);
         mas_rect[i] = new QRect(GetStartPos(i), rect_size);
     }
+
+    gameWindow = new MainGameWindow();
+    connect(gameWindow, &MainGameWindow::openPosWindow, this, &PositioningWindow::newGame);
 }
 
 void PositioningWindow::paintEvent(QPaintEvent *event) {
@@ -120,13 +123,13 @@ void PositioningWindow::MoveRects(QRect *rect) {
 }
 
 void PositioningWindow::onFinish() {
-
+    qDebug()<<"finish 1";
     Ship *mas_ships[10];
     for (int i = 0; i < sizeof(mas_rect) / sizeof(QRect *); i++) {
 
         int size;
         int j = 0;
-        QPoint point;
+        //QPoint point;
 
         if (mas_rect[i]->width() > mas_rect[i]->height()) {
             size = mas_rect[i]->width() / deck_size;
@@ -156,19 +159,18 @@ void PositioningWindow::onFinish() {
     }
 
     Ship *mas_ships_robot[10];
-
     GenerateShipsForRobot(mas_ships_robot);
-
     for (int i = 0; i < 10; ++i) {
         QDebug deb = qDebug();
         for (int j = 0; j < 10; ++j) {
             deb << matrix_robot[j][i];
         }
     }
-
-    gameWindow = new MainGameWindow(mas_ships, mas_ships_robot);
+    //gameWindow = new MainGameWindow(mas_ships, mas_ships_robot);
+    gameWindow->SetUpWindow(mas_ships, mas_ships_robot);
     gameWindow->resize(1300, 700);
     gameWindow->show();
+
     this->close();
 }
 
@@ -213,6 +215,32 @@ void PositioningWindow::onAuto() {
         EditMatrix(mas_rect[i], 1);
     }
     update();
+}
+
+void PositioningWindow::newGame() {
+    for (int i = 0; i < 10; i++) {
+        QPoint topLeft = GetStartPos(i);
+        mas_rect[i]->moveTopLeft(topLeft);
+        if (mas_rect[i]->width() < mas_rect[i]->height()) {
+            int w = mas_rect[i]->width();
+            mas_rect[i]->setWidth(mas_rect[i]->height());
+            mas_rect[i]->setHeight(w);
+        }
+    }
+
+    for (int i = 0; i < 10; ++i) {
+        for (int j = 0; j < 10; ++j) {
+            matrix[i][j] = 0;
+        }
+    }
+
+    for (int i = 0; i < 10; ++i) {
+        for (int j = 0; j < 10; ++j) {
+            matrix_robot[i][j] = 0;
+        }
+    }
+
+    this->show();
 }
 
 void PositioningWindow::PaintEmptyField() {
