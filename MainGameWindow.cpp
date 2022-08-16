@@ -2,7 +2,7 @@
 #include "MainGameWindow.h"
 #include <QDebug>
 
-MainGameWindow::MainGameWindow(){
+MainGameWindow::MainGameWindow() {
     corner_user = new QPoint(120, 70);
     corner_robot = new QPoint(750, 70);
 
@@ -11,7 +11,6 @@ MainGameWindow::MainGameWindow(){
 
     isUsersTurn = true;
     isShootingInProcess = false;
-    gameOver = false;
 
     timer = new QTimer();
     connect(timer, SIGNAL(timeout()), this, SLOT(TimerAlarm()));
@@ -28,7 +27,7 @@ MainGameWindow::MainGameWindow(){
     QVBoxLayout *mainLayout = new QVBoxLayout();
     mainLayout->addWidget(gameOverLabel);
     mainLayout->addWidget(newGameButton);
-    mainLayout->setContentsMargins(500, 620, 500, 20);
+    mainLayout->setContentsMargins(500, 620, 550, 20);
     setLayout(mainLayout);
 
     setMouseTracking(true);
@@ -42,6 +41,8 @@ void MainGameWindow::SetUpWindow(Ship **mas_ships_user_, Ship **mas_ships_robot_
         mas_ships_user[i] = mas_ships_user_[i];
         mas_ships_robot[i] = mas_ships_robot_[i];
     }
+
+    gameOver = false;
 }
 
 void MainGameWindow::paintEvent(QPaintEvent *) {
@@ -52,10 +53,11 @@ void MainGameWindow::paintEvent(QPaintEvent *) {
     if (isShootingInProcess) PaintPosRobot();
     if (isUsersTurn) PaintPosUser();
     PaintTriangle();
+    if(gameOver) PaintRemainingShips();
 }
 
 void MainGameWindow::mousePressEvent(QMouseEvent *event) {
-    if(gameOver) return;
+    if (gameOver) return;
     if (EventFilter(event)) return;
 
     srand(time(NULL));
@@ -86,7 +88,7 @@ void MainGameWindow::mousePressEvent(QMouseEvent *event) {
                                 }
                             }
                         }
-                        if(isGameOver(mas_ships_robot)){
+                        if (isGameOver(mas_ships_robot)) {
                             gameOverLabel->setText("Victory!");
                             gameOverLabel->show();
                         }
@@ -105,10 +107,7 @@ void MainGameWindow::mousePressEvent(QMouseEvent *event) {
             control = true;
             Sleep(1500);
 
-            do {
-                suggestedX = rand() % 10;
-                suggestedY = rand() % 10;
-            } while (field_user->matrix[suggestedX][suggestedY] < 0);
+            LogicForRobot();
 
             isShootingInProcess = true;
             repaint();
@@ -122,8 +121,10 @@ void MainGameWindow::mousePressEvent(QMouseEvent *event) {
                 mas_ships_user[shipNumber - 1]->mas_decks[deckNumber - 1]->SetState(Deck::SHOT_DECK);
 
                 for (int i = 0; i < mas_ships_user[shipNumber - 1]->size; i++) {
-                    if (mas_ships_user[shipNumber - 1]->mas_decks[i]->GetState() == Deck::SAFE_DECK) break;
-                    else if (i == mas_ships_user[shipNumber - 1]->size - 1) {
+                    if (mas_ships_user[shipNumber - 1]->mas_decks[i]->GetState() == Deck::SAFE_DECK) {
+                        mas_ships_user[shipNumber - 1]->SetState(Ship::WOUNDED_SHIP);
+                        break;
+                    } else if (i == (mas_ships_user[shipNumber - 1]->size - 1)) {
                         mas_ships_user[shipNumber - 1]->SetState(Ship::SHOT_SHIP);
 
                         for (int j = 0; j < mas_ships_user[shipNumber - 1]->size; j++) {
@@ -139,26 +140,26 @@ void MainGameWindow::mousePressEvent(QMouseEvent *event) {
                                 }
                             }
                         }
-                        if(isGameOver(mas_ships_user)){
+                        if (isGameOver(mas_ships_user)) {
                             gameOverLabel->setText("Defeat!");
                             gameOverLabel->show();
+                            repaint();
                         }
-
                     }
                 }
                 field_user->matrix[suggestedX][suggestedY] = -2;
-            }else if (field_user->matrix[suggestedX][suggestedY] == 0) {
-                    field_user->matrix[suggestedX][suggestedY] = -1;
-                    isUsersTurn = true;
-                }
-
-                repaint();
+            } else if (field_user->matrix[suggestedX][suggestedY] == 0) {
+                field_user->matrix[suggestedX][suggestedY] = -1;
+                isUsersTurn = true;
             }
+
+            repaint();
         }
     }
+}
 
 void MainGameWindow::mouseMoveEvent(QMouseEvent *event) {
-    if(gameOver) return;
+    if (gameOver) return;
     if (isUsersTurn && field_rect_robot->contains(event->pos()))
         suggestedCoord = Coordinates::TranslateCoordinates(event->pos(), *corner_robot, deck_size);
     else suggestedCoord = Coordinates(-1, -1);
@@ -284,7 +285,7 @@ void MainGameWindow::PaintShips() {
 }
 
 void MainGameWindow::PaintPosRobot() {
-    if(gameOver) return;
+    if (gameOver) return;
     QPainter painter(this);
     QPen darkBluePen(QColorConstants::Svg::darkblue, 3);
     painter.setPen(darkBluePen);
@@ -293,7 +294,7 @@ void MainGameWindow::PaintPosRobot() {
 }
 
 void MainGameWindow::PaintPosUser() {
-    if(gameOver) return;
+    if (gameOver) return;
     QPainter painter(this);
     QPen darkBluePen(QColorConstants::Svg::darkblue, 3);
     painter.setPen(darkBluePen);
@@ -391,7 +392,7 @@ void MainGameWindow::PaintShotUsersShips() {
     bool horizontal;
 
     for (int i = 0; i < 10; i++) {
-        if (mas_ships_user[i]->GetState() == Ship::SHOT_SHIP){
+        if (mas_ships_user[i]->GetState() == Ship::SHOT_SHIP) {
             Coordinates topLeft = mas_ships_user[i]->mas_decks[0]->coord;
             QSize rect_size;
             QRect rect;
@@ -417,15 +418,108 @@ void MainGameWindow::PaintShotUsersShips() {
     }
 }
 
+void MainGameWindow::PaintRemainingShips() {
+    qDebug()<<"remaining";
+    QPainter painter(this);
+    QPen blackPen(QColorConstants::Svg::black, 1);
+    QBrush orangeBrush(QColorConstants::Svg::orange);
+    painter.setPen(blackPen);
+    painter.setBrush(orangeBrush);
+
+    for (int column = 0; column < 10; column++) {
+        for (int row = 0; row < 10; row++){
+            if(field_robot->matrix[column][row]>0){
+                painter.drawRect(corner_robot->x() + deck_size * column, corner_robot->y() + deck_size * row,
+                                 deck_size,
+                                 deck_size);
+            }
+        }
+    }
+}
+
 bool MainGameWindow::isGameOver(Ship **mas_ships) {
     for (int i = 0; i < 10; i++) {
-        if(mas_ships[i]->GetState()==Ship::SAFE_SHIP) return false;
+        if (mas_ships[i]->GetState() == Ship::SAFE_SHIP) return false;
     }
     gameOver = true;
     return true;
 }
 
 void MainGameWindow::onNewGame() {
+    gameOverLabel->hide();
     this->close();
     emit openPosWindow();
+}
+
+void MainGameWindow::LogicForRobot() {
+    srand(time(NULL));
+
+    int i = 0;
+    Ship *ship = mas_ships_user[i];
+    while (ship->GetState() != Ship::WOUNDED_SHIP) {
+        i++;
+        ship = mas_ships_user[i];
+        if (i == 9 && ship->GetState() != Ship::WOUNDED_SHIP) {
+            do {
+                suggestedX = rand() % 10;
+                suggestedY = rand() % 10;
+            } while (field_user->matrix[suggestedX][suggestedY] < 0);
+            qDebug() << "no wounded";
+            return;
+        }
+    }
+    qDebug() << "wounded" << i;
+    int number_of_shot_decks = 0;
+    Deck *shot_deck;
+    for (int j = 0; j < ship->size; j++) {
+        if (ship->mas_decks[j]->GetState() == Deck::SHOT_DECK) {
+            number_of_shot_decks++;
+            shot_deck = ship->mas_decks[j];
+        }
+    }
+    qDebug() << "num" << number_of_shot_decks;
+    if (number_of_shot_decks == 1) {
+        do {
+            bool isYconst = rand() % 2;
+            bool plus = rand() % 2;
+
+            if (isYconst) {
+                suggestedY = shot_deck->coord.getY();
+                if (plus) suggestedX = shot_deck->coord.getX() + 1;
+                else suggestedX = shot_deck->coord.getX() - 1;
+            } else {
+                suggestedX = shot_deck->coord.getX();
+                if (plus) suggestedY = shot_deck->coord.getY() + 1;
+                else suggestedY = shot_deck->coord.getY() - 1;
+            }
+        } while (suggestedX < 0 || suggestedX >= 10 || suggestedY < 0 || suggestedY >= 10 ||
+                 field_user->matrix[suggestedX][suggestedY] < 0);
+        return;
+    } else {
+        if (ship->isShipHorizontal) {
+            suggestedY = shot_deck->coord.getY();
+            do {
+                bool plus = rand() % 2;
+                if (plus) {
+                    suggestedX = shot_deck->coord.getX() + 1;
+                } else {
+                    suggestedX = shot_deck->coord.getX() - number_of_shot_decks;
+                }
+
+            } while (suggestedX < 0 || suggestedX >= 10 || field_user->matrix[suggestedX][suggestedY] < 0);
+        } else {
+            suggestedX = shot_deck->coord.getX();
+
+            do {
+                bool plus = rand() % 2;
+                if (plus) {
+                    suggestedY = shot_deck->coord.getY() + 1;
+                } else {
+                    suggestedY = shot_deck->coord.getY() - number_of_shot_decks;
+                }
+
+            } while (suggestedY < 0 || suggestedY >= 10 || field_user->matrix[suggestedX][suggestedY] < 0);
+        }
+        return;
+    }
 }

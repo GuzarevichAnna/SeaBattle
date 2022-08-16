@@ -24,7 +24,6 @@ class MainGameWindow : public QWidget {
     Q_OBJECT
 
 public:
-    //MainGameWindow(Ship** mas_ships_user_, Ship** mas_ships_robot_);
     MainGameWindow();
 
     void SetUpWindow(Ship** mas_ships_user_, Ship** mas_ships_robot_);
@@ -40,10 +39,10 @@ public:
     void PaintTriangle();
     void PaintShotUsersShips();
     void PaintShotRobotsShips();
+    void PaintRemainingShips();
     bool isGameOver(Ship** mas_ships);
-
-
     bool EventFilter(QEvent *event);
+    void LogicForRobot();
 
 private slots:
     void TimerAlarm();
@@ -77,8 +76,8 @@ private:
 
     QTimer* timer;
 
-    int suggestedX = 1;
-    int suggestedY = 2;
+    int suggestedX = -1;
+    int suggestedY = -1;
 
     Coordinates suggestedCoord;
 

@@ -5,20 +5,21 @@
 
 class Ship {
 public:
-    Ship(Deck** mas_decks_, int size_){
+    Ship(Deck** mas_decks_, int size_, bool isShipHorizontal_ = true){
         mas_decks = mas_decks_;
-        //id = id_;
         size = size_;
         state = SAFE_SHIP;
+        isShipHorizontal = isShipHorizontal_;
     }
 
     Deck** mas_decks;
-    //int id;
     int size;
+    bool isShipHorizontal;
 
     enum State_Ship{
         SAFE_SHIP = 0,
-        SHOT_SHIP = 1
+        SHOT_SHIP = 1,
+        WOUNDED_SHIP = 2
     };
 
     State_Ship GetState(){

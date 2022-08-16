@@ -57,6 +57,7 @@ private slots:
 
     void onFinish();
     void onAuto();
+    void newGame();
 
 private:
     const int length = 400;

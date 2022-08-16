@@ -129,12 +129,14 @@ void PositioningWindow::onFinish() {
 
         int size;
         int j = 0;
-        //QPoint point;
+        bool isShipHorizontal;
 
         if (mas_rect[i]->width() > mas_rect[i]->height()) {
             size = mas_rect[i]->width() / deck_size;
+            isShipHorizontal = true;
         } else {
             size = mas_rect[i]->height() / deck_size;
+            isShipHorizontal = false;
         }
         Deck **mas_decks = new Deck *[size];
 
@@ -154,7 +156,7 @@ void PositioningWindow::onFinish() {
             }
         }
 
-        Ship *ship = new Ship(mas_decks, size);
+        Ship *ship = new Ship(mas_decks, size, isShipHorizontal);
         mas_ships[i] = ship;
     }
 
@@ -166,7 +168,7 @@ void PositioningWindow::onFinish() {
             deb << matrix_robot[j][i];
         }
     }
-    //gameWindow = new MainGameWindow(mas_ships, mas_ships_robot);
+
     gameWindow->SetUpWindow(mas_ships, mas_ships_robot);
     gameWindow->resize(1300, 700);
     gameWindow->show();
