@@ -419,10 +419,9 @@ void MainGameWindow::PaintShotUsersShips() {
 }
 
 void MainGameWindow::PaintRemainingShips() {
-    qDebug()<<"remaining";
     QPainter painter(this);
     QPen blackPen(QColorConstants::Svg::black, 1);
-    QBrush orangeBrush(QColorConstants::Svg::orange);
+    QBrush orangeBrush(QColorConstants::Svg::yellow);
     painter.setPen(blackPen);
     painter.setBrush(orangeBrush);
 
@@ -446,9 +445,16 @@ bool MainGameWindow::isGameOver(Ship **mas_ships) {
 }
 
 void MainGameWindow::onNewGame() {
-    gameOverLabel->hide();
-    this->close();
-    emit openPosWindow();
+    QMessageBox msgBox;
+    msgBox.setText(tr("Are you sure you want to cancel this game and start a new one?"));
+    QAbstractButton* pButtonYes = msgBox.addButton(tr("Yes"), QMessageBox::YesRole);
+    msgBox.addButton(tr("No"), QMessageBox::NoRole);
+    msgBox.exec();
+    if (msgBox.clickedButton()==pButtonYes){
+        gameOverLabel->hide();
+        this->close();
+        emit openPosWindow();
+    }
 }
 
 void MainGameWindow::LogicForRobot() {

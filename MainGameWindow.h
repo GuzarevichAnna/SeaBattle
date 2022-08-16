@@ -17,6 +17,7 @@
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QPushButton>
+#include <QMessageBox>
 
 
 class MainGameWindow : public QWidget {
