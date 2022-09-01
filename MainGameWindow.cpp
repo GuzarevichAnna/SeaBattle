@@ -1,6 +1,5 @@
 
 #include "MainGameWindow.h"
-#include <QDebug>
 
 MainGameWindow::MainGameWindow() {
     corner_user = new QPoint(120, 70);
@@ -27,7 +26,7 @@ MainGameWindow::MainGameWindow() {
     QVBoxLayout *mainLayout = new QVBoxLayout();
     mainLayout->addWidget(gameOverLabel);
     mainLayout->addWidget(newGameButton);
-    mainLayout->setContentsMargins(500, 620, 550, 20);
+    mainLayout->setContentsMargins(590, 620, 600, 20);
     setLayout(mainLayout);
 
     setMouseTracking(true);
@@ -53,7 +52,7 @@ void MainGameWindow::paintEvent(QPaintEvent *) {
     if (isShootingInProcess) PaintPosRobot();
     if (isUsersTurn) PaintPosUser();
     PaintTriangle();
-    if(gameOver) PaintRemainingShips();
+    if (gameOver) PaintRemainingShips();
 }
 
 void MainGameWindow::mousePressEvent(QMouseEvent *event) {
@@ -143,7 +142,9 @@ void MainGameWindow::mousePressEvent(QMouseEvent *event) {
                         if (isGameOver(mas_ships_user)) {
                             gameOverLabel->setText("Defeat!");
                             gameOverLabel->show();
+                            field_user->matrix[suggestedX][suggestedY] = -2;
                             repaint();
+                            return;
                         }
                     }
                 }
@@ -426,8 +427,8 @@ void MainGameWindow::PaintRemainingShips() {
     painter.setBrush(orangeBrush);
 
     for (int column = 0; column < 10; column++) {
-        for (int row = 0; row < 10; row++){
-            if(field_robot->matrix[column][row]>0){
+        for (int row = 0; row < 10; row++) {
+            if (field_robot->matrix[column][row] > 0) {
                 painter.drawRect(corner_robot->x() + deck_size * column, corner_robot->y() + deck_size * row,
                                  deck_size,
                                  deck_size);
@@ -447,10 +448,10 @@ bool MainGameWindow::isGameOver(Ship **mas_ships) {
 void MainGameWindow::onNewGame() {
     QMessageBox msgBox;
     msgBox.setText(tr("Are you sure you want to cancel this game and start a new one?"));
-    QAbstractButton* pButtonYes = msgBox.addButton(tr("Yes"), QMessageBox::YesRole);
+    QAbstractButton *pButtonYes = msgBox.addButton(tr("Yes"), QMessageBox::YesRole);
     msgBox.addButton(tr("No"), QMessageBox::NoRole);
     msgBox.exec();
-    if (msgBox.clickedButton()==pButtonYes){
+    if (msgBox.clickedButton() == pButtonYes) {
         gameOverLabel->hide();
         this->close();
         emit openPosWindow();
@@ -470,11 +471,9 @@ void MainGameWindow::LogicForRobot() {
                 suggestedX = rand() % 10;
                 suggestedY = rand() % 10;
             } while (field_user->matrix[suggestedX][suggestedY] < 0);
-            qDebug() << "no wounded";
             return;
         }
     }
-    qDebug() << "wounded" << i;
     int number_of_shot_decks = 0;
     Deck *shot_deck;
     for (int j = 0; j < ship->size; j++) {
@@ -483,7 +482,6 @@ void MainGameWindow::LogicForRobot() {
             shot_deck = ship->mas_decks[j];
         }
     }
-    qDebug() << "num" << number_of_shot_decks;
     if (number_of_shot_decks == 1) {
         do {
             bool isYconst = rand() % 2;

@@ -1,19 +1,17 @@
-
 #ifndef SEABATTLE_COORDINATES_H
 #define SEABATTLE_COORDINATES_H
 
 #include <QPoint>
 
-class Coordinates{
+class Coordinates {
 
 public:
-    Coordinates(int x_, int y_){
+    Coordinates(int x_, int y_) {
         x = x_;
         y = y_;
     }
 
-    Coordinates(){}
-
+    Coordinates() {}
 
     int getX() const {
         return x;
@@ -23,11 +21,11 @@ public:
         return y;
     }
 
-    static Coordinates TranslateCoordinates(QPoint point, const QPoint& corner, int deck_size){
-            point -= corner;
-            int x = point.x() / deck_size;
-            int y = point.y() / deck_size;
-            return Coordinates(x, y);
+    static Coordinates TranslateCoordinates(QPoint point, const QPoint &corner, int deck_size) {
+        point -= corner;
+        int x = point.x() / deck_size;
+        int y = point.y() / deck_size;
+        return Coordinates(x, y);
     }
 
 private:

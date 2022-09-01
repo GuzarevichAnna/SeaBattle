@@ -7,6 +7,7 @@ PositioningWindow::PositioningWindow() {
     autoButton = new QPushButton("Auto positioning");
     connect(finishButton, SIGNAL(clicked(bool)), SLOT(onFinish()));
     connect(autoButton, SIGNAL(clicked(bool)), SLOT(onAuto()));
+    finishButton->setEnabled(false);
 
     for (int i = 0; i < 10; ++i) {
         for (int j = 0; j < 10; ++j) {
@@ -64,10 +65,20 @@ void PositioningWindow::mousePressEvent(QMouseEvent *event) {
 }
 
 void PositioningWindow::mouseMoveEvent(QMouseEvent *event) {
-    if ((event->buttons() & Qt::LeftButton)) {
-        cur_point = event->pos();
+    if (((event->buttons() & Qt::LeftButton))) {
 
         if (which_ship != -1) {
+            if (!((mas_rect[which_ship]->top() <= 0 ||
+                   mas_rect[which_ship]->bottom() >= this->height()) && (event->y() < 0 || event->y() >
+                                                                                           this->height()))) {
+                cur_point.setY(event->y());
+            }
+
+            if (!((mas_rect[which_ship]->left() <= 0 ||
+                   mas_rect[which_ship]->right() >= this->width()) && (event->x() < 0 || event->x() >
+                                                                                         this->width()))) {
+                cur_point.setX(event->x());
+            }
             MoveRects(mas_rect[which_ship]);
         }
 
@@ -84,6 +95,10 @@ void PositioningWindow::mouseReleaseEvent(QMouseEvent *event) {
                 mas_rect[which_ship]->moveTopLeft(suggested_pos.topLeft());
                 EditMatrix(mas_rect[which_ship], 1);
                 isPositioningInProcess = false;
+                for (int i = 0; i < 10; i++) {
+                    if (!field_rect->contains(*mas_rect[i])) break;
+                    if (i == 9) finishButton->setEnabled(true);
+                }
                 update();
                 return;
             }
@@ -95,6 +110,7 @@ void PositioningWindow::mouseReleaseEvent(QMouseEvent *event) {
         }
         mas_rect[which_ship]->moveTopLeft(GetStartPos(which_ship));
         isPositioningInProcess = false;
+        finishButton->setEnabled(false);
         update();
     }
 }
@@ -115,6 +131,7 @@ void PositioningWindow::mouseDoubleClickEvent(QMouseEvent *event) {
 void PositioningWindow::MoveRects(QRect *rect) {
     QPoint dist_point = cur_point - previous_point;
     rect->moveTo(rect->topLeft() + dist_point);
+
     if (field_rect->contains(rect->center())) {
         isInField = true;
     } else {
@@ -123,12 +140,11 @@ void PositioningWindow::MoveRects(QRect *rect) {
 }
 
 void PositioningWindow::onFinish() {
-    qDebug()<<"finish 1";
     Ship *mas_ships[10];
     for (int i = 0; i < sizeof(mas_rect) / sizeof(QRect *); i++) {
 
         int size;
-        int j = 0;
+        int j;
         bool isShipHorizontal;
 
         if (mas_rect[i]->width() > mas_rect[i]->height()) {
@@ -162,12 +178,6 @@ void PositioningWindow::onFinish() {
 
     Ship *mas_ships_robot[10];
     GenerateShipsForRobot(mas_ships_robot);
-    for (int i = 0; i < 10; ++i) {
-        QDebug deb = qDebug();
-        for (int j = 0; j < 10; ++j) {
-            deb << matrix_robot[j][i];
-        }
-    }
 
     gameWindow->SetUpWindow(mas_ships, mas_ships_robot);
     gameWindow->resize(1300, 700);
@@ -216,6 +226,8 @@ void PositioningWindow::onAuto() {
         *mas_rect[i] = suggested_pos;
         EditMatrix(mas_rect[i], 1);
     }
+
+    finishButton->setEnabled(true);
     update();
 }
 
@@ -242,6 +254,7 @@ void PositioningWindow::newGame() {
         }
     }
 
+    finishButton->setEnabled(false);
     this->show();
 }
 
@@ -262,12 +275,14 @@ void PositioningWindow::PaintEmptyField() {
 
     painter.setFont(QFont("Calibri", 15, QFont::Normal));
     for (int i = 0; i < 9; i++) {
-        painter.drawText(field_rect->topLeft() + QPoint(-deck_size * 0.7, deck_size * (i + 0.8)), QString::number(i + 1));
+        painter.drawText(field_rect->topLeft() + QPoint(-deck_size * 0.7, deck_size * (i + 0.8)),
+                         QString::number(i + 1));
     }
     painter.drawText(field_rect->topLeft() + QPoint(-deck_size, deck_size * (9.8)), QString::number(10));
 
     for (char i = 65; i < 75; i++) {
-        painter.drawText(field_rect->topLeft() + QPoint(deck_size * (i - 65 + 0.3), -deck_size * 0.2), QString(QChar(i)));
+        painter.drawText(field_rect->topLeft() + QPoint(deck_size * (i - 65 + 0.3), -deck_size * 0.2),
+                         QString(QChar(i)));
     }
 }
 
